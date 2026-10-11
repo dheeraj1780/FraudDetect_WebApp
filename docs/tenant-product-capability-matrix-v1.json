@@ -1,0 +1,163 @@
+{
+  "generated_at": "2026-10-06",
+  "wave": "38A",
+  "title": "Clarion Tenant Product Capability Reconciliation",
+  "repositories": [
+    { "name": "fraud-platform-api", "role": "tenant platform API (auth, tenants, credentials, audit, assessments, collector, policies)" },
+    { "name": "fraud-engine", "role": "stateless fraud scoring engine, platform-to-engine only, no tenant-facing surface" },
+    { "name": "fraud-web-app", "role": "tenant dashboard SPA (React 19 + TypeScript + Vite)" }
+  ],
+  "frontend_routes": [
+    { "route": "/", "component": "pages/home.tsx", "backend_api": null, "classification": "NOT_APPLICABLE", "evidence": "Marketing page, no auth" },
+    { "route": "/signin", "component": "pages/auth/sign-in.tsx", "backend_api": "POST /auth/login", "classification": "FUNCTIONAL", "evidence": "real auth flow" },
+    { "route": "/signup", "component": "pages/auth/sign-up.tsx", "backend_api": "POST /auth/register", "classification": "FUNCTIONAL", "evidence": "real auth flow" },
+    { "route": "/sandbox/collector", "component": "pages/sandbox/collector-demo.tsx", "backend_api": "POST /api/v1/collector/tokens, POST /collector/v1/collect", "classification": "FUNCTIONAL", "evidence": "real, unauthenticated demo (Wave 30)" },
+    { "route": "/app/onboarding", "component": "pages/app/onboarding.tsx", "backend_api": "POST /tenants", "classification": "FUNCTIONAL", "evidence": "real endpoint" },
+    { "route": "/app/overview", "component": "pages/app/overview.tsx", "backend_api": "GET /credentials, GET /tenants/current/members, GET /audit-logs", "classification": "FUNCTIONAL", "evidence": "real hooks" },
+    { "route": "/app/assessments", "component": "pages/app/assessments.tsx", "backend_api": "GET /api/v1/assessments", "classification": "FUNCTIONAL", "evidence": "useAssessments (Wave 34C/36); separate opt-in ?sample=1 SAMPLE sub-mode coexists, clearly labelled" },
+    { "route": "/app/assessments/:assessmentId", "component": "pages/app/assessment-detail.tsx (RealAssessmentDetail)", "backend_api": "GET /api/v1/assessments/{id}", "classification": "FUNCTIONAL", "evidence": "Wave 34C" },
+    { "route": "/app/assessments/sample/:sampleId", "component": "pages/app/assessment-detail.tsx (SampleAssessmentDetail)", "backend_api": null, "classification": "SAMPLE", "evidence": "static local sample data, clearly labelled, opt-in only" },
+    { "route": "/app/transactions", "component": "pages/app/transactions.tsx", "backend_api": null, "classification": "UNAVAILABLE", "evidence": "honest UnavailableState: 'no transaction data to load'; copy is accurate" },
+    { "route": "/app/signals", "component": "pages/app/signals.tsx", "backend_api": null, "classification": "STATIC", "evidence": "static SUPPLIED/DERIVED signal catalogue; own 'observed on your traffic' section is UnavailableState, accurate" },
+    { "route": "/app/rules", "component": "pages/app/rules.tsx", "backend_api": null, "classification": "STATIC", "evidence": "local CATALOGUE_FAMILIES array, zero API calls, page itself says 'Catalogue frozen · read-only'" },
+    { "route": "/app/cases", "component": "pages/app/cases.tsx", "backend_api": null, "classification": "PLACEHOLDER", "evidence": "UnavailableState + 'Not functional' badge + decorative planned-layout skeleton" },
+    { "route": "/app/decision-trace", "component": "pages/app/decision-trace.tsx", "backend_api": null, "classification": "FUNCTIONAL", "evidence": "real, working client-only paste-and-inspect tool, no network call needed" },
+    { "route": "/app/policies", "component": "pages/app/policies.tsx", "backend_api": "GET/POST /api/v1/policies/*", "classification": "FUNCTIONAL", "evidence": "Wave 35B; hardcoded environment=\"sandbox\" throughout, no selector (Wave 37 finding)" },
+    { "route": "/app/analytics", "component": "pages/app/analytics.tsx", "backend_api": null, "classification": "UNAVAILABLE", "evidence": "UnavailableState copy is STALE: claims platform API 'doesn't yet expose assessment history or aggregates' -- false since Wave 34B/34C shipped GET /assessments; never corrected" },
+    { "route": "/app/api", "component": "pages/app/api.tsx", "backend_api": "GET /credentials", "classification": "FUNCTIONAL", "evidence": "useCredentials()" },
+    { "route": "/app/credentials", "component": "pages/app/credentials.tsx", "backend_api": "GET/POST /credentials, POST /{id}/rotate, POST /{id}/revoke", "classification": "FUNCTIONAL", "evidence": "full CRUD, OWNER/ADMIN gated" },
+    { "route": "/app/audit-logs", "component": "pages/app/audit-logs.tsx", "backend_api": "GET /audit-logs", "classification": "FUNCTIONAL", "evidence": "real" },
+    { "route": "/app/settings", "component": "pages/app/settings.tsx", "backend_api": "GET /tenants/current, GET /tenants/current/members", "classification": "FUNCTIONAL", "evidence": "real" }
+  ],
+  "backend_capabilities": [
+    { "capability_id": "auth.register", "route": "POST /api/v1/auth/register", "auth": "none", "tenant_scoped": false, "environment_scoped": false, "public_tenant_safe": true, "frontend_consumer": "/signup", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "auth.login", "route": "POST /api/v1/auth/login", "auth": "none", "tenant_scoped": false, "environment_scoped": false, "public_tenant_safe": true, "frontend_consumer": "/signin", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "auth.me", "route": "GET /api/v1/auth/me", "auth": "session", "tenant_scoped": false, "environment_scoped": false, "public_tenant_safe": true, "frontend_consumer": "AuthContext", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "tenants.create", "route": "POST /api/v1/tenants", "auth": "session (get_current_user)", "tenant_scoped": false, "environment_scoped": false, "public_tenant_safe": true, "frontend_consumer": "/app/onboarding", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "tenants.read_current", "route": "GET /api/v1/tenants/current", "auth": "get_current_tenant_context", "tenant_scoped": true, "environment_scoped": false, "public_tenant_safe": true, "frontend_consumer": "/app/settings", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "memberships.list", "route": "GET /api/v1/tenants/current/members", "auth": "get_current_tenant_context", "rbac": "any role", "tenant_scoped": true, "environment_scoped": false, "public_tenant_safe": true, "frontend_consumer": "/app/settings, /app/overview, /app/policies (role check)", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "memberships.mutate", "route": null, "auth": null, "tenant_scoped": null, "frontend_consumer": null, "frontend_status": "MISSING", "notes": "No invite/role-change/remove endpoint exists anywhere -- only a read route exists on this router" },
+    { "capability_id": "credentials.list", "route": "GET /api/v1/credentials", "auth": "get_current_tenant_context", "rbac": "any role", "tenant_scoped": true, "environment_scoped": "label only, spans both", "public_tenant_safe": true, "frontend_consumer": "/app/credentials, /app/api, /app/overview", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "credentials.create", "route": "POST /api/v1/credentials", "auth": "get_current_tenant_context", "rbac": "OWNER, ADMIN (require_role)", "tenant_scoped": true, "environment_scoped": "sandbox only -- create_sandbox_credential", "public_tenant_safe": true, "frontend_consumer": "/app/credentials", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "credentials.rotate_revoke", "route": "POST /api/v1/credentials/{id}/rotate|revoke", "auth": "get_current_tenant_context", "rbac": "OWNER, ADMIN", "tenant_scoped": true, "public_tenant_safe": true, "frontend_consumer": "/app/credentials", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "audit.list", "route": "GET /api/v1/audit-logs", "auth": "get_current_tenant_context", "rbac": "any role (not role-gated)", "tenant_scoped": true, "public_tenant_safe": true, "frontend_consumer": "/app/audit-logs", "frontend_status": "FUNCTIONAL", "postgresql_verified": true, "notes": "before_json/after_json spot-checked tenant-safe for credential events; policy events include environment_id as a raw UUID (minor consistency note, not a leak -- see gaps)" },
+    { "capability_id": "context_events.ingest", "route": "POST /api/v1/context-events", "auth": "get_tenant_from_api_credential", "tenant_scoped": true, "environment_scoped": true, "public_tenant_safe": "write-only, no read route exists", "frontend_consumer": "none", "frontend_status": "MISSING (no GET route to consume)", "postgresql_verified": true },
+    { "capability_id": "assessments.submit", "route": "POST /api/v1/assessments", "auth": "get_tenant_from_api_credential", "tenant_scoped": true, "environment_scoped": true, "public_tenant_safe": true, "frontend_consumer": "none (server-to-server by design)", "frontend_status": "NOT_APPLICABLE", "postgresql_verified": true },
+    { "capability_id": "assessments.list", "route": "GET /api/v1/assessments", "auth": "get_current_tenant_context", "tenant_scoped": true, "environment_scoped": "optional filter, never auth boundary", "public_tenant_safe": true, "frontend_consumer": "/app/assessments", "frontend_status": "FUNCTIONAL", "postgresql_verified": true, "tests": "tests/integration/test_assessment_read_api.py (30)" },
+    { "capability_id": "assessments.detail", "route": "GET /api/v1/assessments/{id}", "auth": "get_current_tenant_context", "tenant_scoped": true, "public_tenant_safe": true, "frontend_consumer": "/app/assessments/:assessmentId", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "collector.issue_token", "route": "POST /api/v1/collector/tokens", "auth": "get_tenant_from_api_credential", "tenant_scoped": true, "environment_scoped": true, "public_tenant_safe": true, "developer_only": true, "frontend_consumer": "/sandbox/collector", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "collector.collect", "route": "POST /collector/v1/collect (separately mounted ASGI app)", "auth": "token-based", "tenant_scoped": true, "public_tenant_safe": true, "developer_only": true, "frontend_consumer": "/sandbox/collector", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "policies.read", "route": "GET /api/v1/policies/active, /versions/{id}, /{policy_id}/versions", "auth": "get_current_tenant_context", "rbac": "policy:read -- OWNER, ADMIN", "tenant_scoped": true, "environment_scoped": "name-resolved server-side", "public_tenant_safe": true, "frontend_consumer": "/app/policies", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "policies.create_draft", "route": "POST /api/v1/policies/drafts", "auth": "get_current_tenant_context", "rbac": "policy:create -- OWNER, ADMIN", "tenant_scoped": true, "public_tenant_safe": true, "frontend_consumer": "/app/policies", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "policies.activate_reactivate_retire", "route": "POST /api/v1/policies/versions/{id}/activate|reactivate|retire", "auth": "get_current_tenant_context", "rbac": "OWNER only", "tenant_scoped": true, "public_tenant_safe": true, "frontend_consumer": "/app/policies", "frontend_status": "FUNCTIONAL", "postgresql_verified": true },
+    { "capability_id": "rules.configuration", "route": null, "auth": null, "tenant_scoped": null, "frontend_consumer": "/app/rules (static only)", "frontend_status": "STATIC", "notes": "No rule configuration API exists at any level -- tenant or platform-operator. fraud-engine's own RuleRegistry is deployment-time/env-var only, one global registry, zero runtime or per-tenant path." },
+    { "capability_id": "signals.explorer", "route": null, "auth": null, "tenant_scoped": null, "frontend_consumer": "/app/signals (static only)", "frontend_status": "STATIC", "notes": "No tenant-readable signal/telemetry API exists -- context_events is write-only, network_intelligence_observations and collector_acquisition_observations have no GET route at all" },
+    { "capability_id": "cases.management", "route": null, "auth": null, "tenant_scoped": null, "frontend_consumer": "/app/cases (placeholder only)", "frontend_status": "PLACEHOLDER", "notes": "No case model exists anywhere in any repository" },
+    { "capability_id": "transactions.read", "route": null, "auth": null, "tenant_scoped": null, "frontend_consumer": "/app/transactions (unavailable only)", "frontend_status": "UNAVAILABLE", "notes": "Deliberate: Assessment model never persists amount/currency/instrument/destination, only an opaque reference + one-way fingerprint" },
+    { "capability_id": "analytics.aggregation", "route": null, "auth": null, "tenant_scoped": null, "frontend_consumer": "/app/analytics (unavailable, stale copy)", "frontend_status": "UNAVAILABLE", "notes": "Underlying row-level data (volume, risk band, recommendation, latency, failure rate, environment split, policy-version correlation) is already queryable via GET /assessments; no aggregation endpoint exists; page copy is now factually stale" },
+    { "capability_id": "platform_admin.any", "route": null, "auth": null, "tenant_scoped": null, "frontend_consumer": "none", "frontend_status": "MISSING", "notes": "No role, identity, router, or cross-tenant query path exists anywhere. PLATFORM ADMIN UI SHOULD REMAIN DEFERRED." },
+    { "capability_id": "environment.live_provisioning", "route": null, "auth": null, "tenant_scoped": null, "frontend_consumer": "none", "frontend_status": "MISSING", "notes": "The ONE root blocker for all LIVE-environment capability -- tenant_service.py's create_tenant_with_owner is the sole TenantEnvironment-creating code path and hardcodes SANDBOX" },
+    { "capability_id": "health.liveness_readiness", "route": "GET /health, GET /readiness", "auth": "none", "tenant_scoped": false, "public_tenant_safe": true, "frontend_consumer": "none (ops only)", "frontend_status": "NOT_APPLICABLE", "postgresql_verified": true }
+  ],
+  "engine_capabilities": [
+    { "capability_id": "engine.assess", "route": "POST /internal/v1/assessments (fraud-engine)", "exposure": "platform-to-engine only, never tenant-reachable", "stateless": true, "response_fields_withheld_from_tenants": ["evidence", "rule_versions", "scoring_configuration_hash", "decision_trace_reference", "family_results", "configuration_content"], "response_fields_exposed_to_tenants": ["risk_score", "risk_band", "reason_code (derived from evidence)", "evaluation_state", "policy_recommendation (via platform policy layer)", "engine_version strings"] },
+    { "capability_id": "engine.rule_registry", "location": "fraud-engine/app/rules/registry.py, app/main.py::build_rule_registry", "exposure": "internal only, built once at process startup from environment variables, one global registry shared by every tenant", "governance": "RuleEvaluationMode (ACTIVE/SHADOW/etc.) and mandatory approval metadata (approved_by/approved_at/release_checklist_reference) for PRODUCTION/CALIBRATING rules, enforced at registration time", "tenant_or_operator_api": "none -- deployment-time env var + redeploy only" },
+    { "capability_id": "engine.rule_catalogue_doc", "location": "fraud-engine/docs/rule-catalogue-v1.md", "exposure": "documentation only, not an API", "families_documented": "F1 through F9, ~91 rule-table rows" }
+  ],
+  "environment_matrix": [
+    { "capability": "Credentials", "sandbox": "real, issuable via POST /credentials", "live": "not issuable -- no route/method exists (only create_sandbox_credential)", "reason": "No LIVE TenantEnvironment can exist for any tenant yet" },
+    { "capability": "Collector", "sandbox": "real, gated by collector_sandbox_enabled", "live": "code-complete gate (collector_live_enabled) but unreachable -- no LIVE environment row can ever exist to trigger it", "reason": "Blocked transitively by environment provisioning, not a collector defect" },
+    { "capability": "Assessments", "sandbox": "real, fully functional", "live": "code is environment-agnostic and would work unchanged once a LIVE environment and credential exist", "reason": "Already environment-generic; not itself a blocker" },
+    { "capability": "Policies", "sandbox": "real, fully functional, hardcoded in the frontend", "live": "backend API is environment-name-generic and already supports it; only the frontend hardcodes sandbox and no LIVE environment exists to select", "reason": "Backend ready; blocked only by the same root environment-provisioning gap plus the frontend's deliberate lack of a (currently pointless) selector" },
+    { "capability": "Rules", "sandbox": "N/A -- no tenant rule configuration exists in either environment", "live": "N/A", "reason": "Not an environment gap -- the capability itself does not exist for any environment" },
+    { "capability": "Signals", "sandbox": "N/A -- no tenant signal-read API in either environment", "live": "N/A", "reason": "Not an environment gap -- no read API exists for any environment" },
+    { "capability": "Cases", "sandbox": "N/A -- no case model exists", "live": "N/A", "reason": "Not an environment gap -- the capability does not exist" },
+    { "capability": "Transactions", "sandbox": "N/A -- no transaction read model exists", "live": "N/A", "reason": "Deliberate privacy/minimization design decision, not an environment gap" },
+    { "capability": "Analytics", "sandbox": "row-level data queryable, no aggregation layer", "live": "same, once live assessments exist", "reason": "Blocked on a new aggregation capability, not on environment status" },
+    { "capability": "Developer tools (API page, Collector sandbox)", "sandbox": "real, fully functional", "live": "not applicable -- developer tools are explicitly sandbox-oriented by product design", "reason": "No evidence this was ever intended to support live" }
+  ],
+  "security_exposure_matrix": [
+    { "item": "Raw IP address", "classification": "SENSITIVE_DO_NOT_EXPOSE", "current_exposure": "never stored raw" },
+    { "item": "source_ip_hash", "classification": "ENGINE_INTERNAL", "current_exposure": "stored, never in any public schema" },
+    { "item": "Device fingerprint raw value", "classification": "SENSITIVE_DO_NOT_EXPOSE", "current_exposure": "never stored raw" },
+    { "item": "device_ref_hash", "classification": "ENGINE_INTERNAL", "current_exposure": "withheld from public schemas" },
+    { "item": "Customer/phone/email/address raw PII", "classification": "SENSITIVE_DO_NOT_EXPOSE", "current_exposure": "never persisted raw, only keyed pseudonyms" },
+    { "item": "*_ref_hash pseudonyms generally", "classification": "ENGINE_INTERNAL", "current_exposure": "withheld from every public response" },
+    { "item": "Behavioral telemetry (collector observations)", "classification": "ENGINE_INTERNAL", "current_exposure": "no GET route exposes this table to tenants" },
+    { "item": "Network intelligence (MaxMind) raw response", "classification": "ENGINE_INTERNAL", "current_exposure": "no tenant-facing route; table is not even tenant-scoped" },
+    { "item": "Rule IDs", "classification": "ENGINE_INTERNAL", "current_exposure": "never in public assessment schemas, only reason_code strings" },
+    { "item": "Rule thresholds/weights", "classification": "ENGINE_INTERNAL", "current_exposure": "no API exposes fraud-engine rule config" },
+    { "item": "scoring_configuration_hash", "classification": "ENGINE_INTERNAL", "current_exposure": "execution_json only, never serialized to a public schema" },
+    { "item": "decision_trace_reference", "classification": "ENGINE_INTERNAL", "current_exposure": "execution_json only" },
+    { "item": "execution_json (whole)", "classification": "ENGINE_INTERNAL", "current_exposure": "confirmed never read by the public-facing serialization path" },
+    { "item": "idempotency_key", "classification": "SENSITIVE_DO_NOT_EXPOSE", "current_exposure": "never read by any read-path method" },
+    { "item": "request_fingerprint", "classification": "SENSITIVE_DO_NOT_EXPOSE", "current_exposure": "never read by any read-path method" },
+    { "item": "credential_id", "classification": "ENGINE_INTERNAL", "current_exposure": "stored on Assessment, deliberately never returned" },
+    { "item": "API credential secret", "classification": "SENSITIVE_DO_NOT_EXPOSE", "current_exposure": "shown once at creation/rotation only; GET /credentials never returns it" },
+    { "item": "failure_reason", "classification": "SENSITIVE_DO_NOT_EXPOSE", "current_exposure": "withheld from assessment responses" },
+    { "item": "Audit before_json/after_json", "classification": "TENANT_SAFE", "current_exposure": "spot-checked tenant-safe for credential events (key_prefix/status/environment only, never a secret)" },
+    { "item": "Policy thresholds_json", "classification": "TENANT_SAFE", "current_exposure": "correctly exposed as 'thresholds' -- the tenant's own authored business rule, not an engine internal" },
+    { "item": "Engine version strings", "classification": "TENANT_SAFE", "current_exposure": "already exposed via AssessmentDetailOut.engine.*, version labels only" },
+    { "item": "Policy version/id", "classification": "TENANT_SAFE", "current_exposure": "already exposed, intentionally -- the tenant's own lineage/version" },
+    { "item": "environment_id (raw UUID) inside audit after_json for policy events", "classification": "TENANT_SAFE_WITH_INCONSISTENCY_NOTE", "current_exposure": "visible only within the owning tenant's own audit log, never cross-tenant, never accepted back as input -- not a vulnerability, but inconsistent with the 'environment is always a name, never a UUID' boundary established elsewhere since Wave 34B" }
+  ],
+  "rbac_matrix": [
+    { "capability": "Credentials: list (read)", "auth": "session", "role": "any", "enforcement": "app/api/v1/credentials.py:35", "frontend_gating": "none needed" },
+    { "capability": "Credentials: create/rotate/revoke (write)", "auth": "session", "role": "OWNER, ADMIN", "enforcement": "credentials.py:17 require_role(OWNER, ADMIN)", "frontend_gating": "credentials.tsx canManage" },
+    { "capability": "Assessments: list/detail (read)", "auth": "session", "role": "any", "enforcement": "assessments.py:111,136 get_current_tenant_context", "frontend_gating": "none" },
+    { "capability": "Assessment submission (write)", "auth": "API credential (not session)", "role": "N/A", "enforcement": "assessments.py:95 get_tenant_from_api_credential", "frontend_gating": "N/A, server-to-server" },
+    { "capability": "Policies: read", "auth": "session", "role": "policy:read -- OWNER, ADMIN", "enforcement": "policy_authorization.py, inside TenantPolicyService, not the router", "frontend_gating": "implicit (no MEMBER ever receives data)" },
+    { "capability": "Policies: create draft (write)", "auth": "session", "role": "policy:create -- OWNER, ADMIN", "enforcement": "policy_authorization.py:71", "frontend_gating": "policies.tsx canCreate" },
+    { "capability": "Policies: activate/reactivate/retire (write)", "auth": "session", "role": "OWNER only", "enforcement": "policy_authorization.py:70", "frontend_gating": "policies.tsx canPublish" },
+    { "capability": "Audit logs: list (read)", "auth": "session", "role": "any", "enforcement": "audit.py:14-25, explicitly not role-gated", "frontend_gating": "none" },
+    { "capability": "Memberships: list (read)", "auth": "session", "role": "any", "enforcement": "memberships.py:14-25", "frontend_gating": "none" },
+    { "capability": "Memberships: write (invite/role-change/remove)", "auth": null, "role": null, "enforcement": "DOES NOT EXIST -- no route", "frontend_gating": "N/A" },
+    { "capability": "Tenant: create", "auth": "session (get_current_user, pre-membership)", "role": "N/A", "enforcement": "tenants.py:20-24", "frontend_gating": "N/A" },
+    { "capability": "Collector token issuance (write)", "auth": "API credential", "role": "N/A", "enforcement": "collector.py:37 get_tenant_from_api_credential", "frontend_gating": "N/A, developer/server-to-server" }
+  ],
+  "gaps": [
+    { "gap_id": "live.environment_provisioning", "priority": "P1", "description": "No code path provisions a LIVE TenantEnvironment for any tenant", "evidence": "app/services/tenant_service.py:33, sole .create() call, hardcoded SANDBOX", "blocks": ["live.credential_issuance", "live.collector", "live.frontend_selector"] },
+    { "gap_id": "live.credential_issuance", "priority": "P1", "description": "No route issues a LIVE credential", "evidence": "app/api/v1/credentials.py:44-51 calls only create_sandbox_credential", "depends_on": ["live.environment_provisioning"] },
+    { "gap_id": "live.frontend_selector", "priority": "P2", "description": "No environment selector in the frontend (correctly deferred, nothing real to select yet)", "evidence": "src/components/app/topbar.tsx static Sandbox badge", "depends_on": ["live.environment_provisioning", "live.credential_issuance"] },
+    { "gap_id": "analytics.stale_copy", "priority": "P2", "description": "Analytics page's UnavailableState copy falsely claims the platform API doesn't expose assessment history/aggregates -- true data access has existed since Wave 34B/34C", "evidence": "src/pages/app/analytics.tsx:103" },
+    { "gap_id": "analytics.aggregation_layer", "priority": "P2", "description": "No backend aggregation endpoint exists; row-level data is already queryable but client-side aggregation over an unbounded history is not viable", "evidence": "only GET /assessments and GET /audit-logs have any read route" },
+    { "gap_id": "rules.tenant_configuration", "priority": "P3", "description": "No tenant or platform-operator rule configuration API exists at any level; fraud-engine's registry is deployment-time/env-var only", "evidence": "app/rules/registry.py, app/main.py::build_rule_registry; no rules router in app/api/v1/router.py" },
+    { "gap_id": "signals.tenant_explorer", "priority": "P3", "description": "No tenant-readable signal/telemetry API exists beyond reason_code strings already in the assessment schemas", "evidence": "context_events is write-only; network_intelligence_observations and collector_acquisition_observations have no GET route" },
+    { "gap_id": "cases.domain_model", "priority": "P2", "description": "No case model exists anywhere; the frontend placeholder's planned layout is the only evidence of intended future shape", "evidence": "zero Case-related model/schema in any repository; src/pages/app/cases.tsx" },
+    { "gap_id": "transactions.read_model", "priority": "N/A", "description": "No transaction read model exists, and building one would require reversing a deliberate, documented privacy-minimization decision", "evidence": "app/models/assessment.py:1-8 module docstring" },
+    { "gap_id": "memberships.mutation_api", "priority": "P2", "description": "No invite/role-change/remove endpoint exists; only a read route", "evidence": "app/api/v1/memberships.py:14-25, 25-line file, one route" },
+    { "gap_id": "platform_admin.foundation", "priority": "P1 (if ever pursued; currently N/A -- deferred)", "description": "No role, identity, router, or cross-tenant query path exists anywhere; building any Platform Admin capability requires this foundation first", "evidence": "zero hits for superuser/impersonat/platform-admin/is_staff across all three repos" },
+    { "gap_id": "audit.environment_id_uuid_inconsistency", "priority": "P3", "description": "Policy lifecycle audit events include environment_id as a raw UUID in after_json/before_json, inconsistent with the name-only convention established elsewhere; not a security leak (tenant-scoped, never accepted back as input)", "evidence": "app/services/policy_service.py:73-78 _state() helper" }
+  ],
+  "dependencies": [
+    {
+      "chain": "LIVE environment capability",
+      "graph": ["live.environment_provisioning (root)", "-> live.credential_issuance", "-> live.collector (code-complete, just unreachable)", "-> live.frontend_selector", "-> (assessments and policies need no further change, already environment-generic)"]
+    },
+    {
+      "chain": "Rule configuration (if ever pursued)",
+      "graph": ["governance/product decision: tenant-configurable vs platform-operator-governed vs engine-registry-driven (undecided)", "-> new tenant/platform rule persistence model", "-> new rule HTTP API", "-> new RBAC permission set (mirroring policy_authorization.py's existing pattern)", "-> frontend Rules UI becomes real"]
+    },
+    {
+      "chain": "Analytics",
+      "graph": ["fix the stale UnavailableState copy (no backend dependency, pure accuracy)", "-> independently: design a backend aggregation layer over assessments (volume/risk-band/recommendation/latency/failure-rate/environment-split/policy-version-correlation are all already row-level queryable)", "-> real Analytics UI"]
+    },
+    {
+      "chain": "Cases",
+      "graph": ["new Case domain model + migration", "-> new case HTTP API + RBAC", "-> linkage to Assessment.id (already a stable, safe public id)", "-> real Cases UI"]
+    },
+    {
+      "chain": "Platform Admin",
+      "graph": ["new platform-level identity/role on User + new audit ActorType + new auth dependency (none of this is an extension of get_current_tenant_context, which structurally requires a tenant membership)", "-> explicit, narrow, documented cross-tenant query exceptions per capability (mirroring the Wave 34B ENVIRONMENT_OPTIONAL_BY_DESIGN precedent)", "-> individual Platform Admin capabilities (tenant list/detail, cross-tenant audit, etc.)"]
+    }
+  ],
+  "recommended_waves": [
+    { "wave": "38B (suggested)", "objective": "Fix the stale Analytics UnavailableState copy", "priority": "P2", "repos": ["fraud-web-app"], "backend_changes": "none", "why_now": "pure accuracy fix, zero dependency, currently actively misleading users about platform capability" },
+    { "wave": "39 (suggested)", "objective": "Membership mutation API (invite/role-change/remove) + minimal frontend", "priority": "P2", "repos": ["fraud-platform-api", "fraud-web-app"], "why_now": "persistence already exists (TenantMembership), only the mutation surface and RBAC wiring are missing, mirroring the already-proven Policy HTTP API pattern" },
+    { "wave": "40 (suggested)", "objective": "LIVE environment provisioning path + LIVE credential issuance", "priority": "P1", "repos": ["fraud-platform-api"], "why_now": "the single root blocker for the entire LIVE capability chain; requires a prior product/security decision (self-service vs operator-gated) before implementation", "must_not_include": "frontend selector until this exists" },
+    { "wave": "41 (suggested)", "objective": "Analytics aggregation backend layer + real frontend", "priority": "P2", "repos": ["fraud-platform-api", "fraud-web-app"], "why_now": "row-level data already exists; only a deliberate aggregation-endpoint design is missing, no privacy decision required" },
+    { "wave": "N/A", "objective": "Transactions UI", "priority": "N/A", "reason_deferred": "would require reversing a deliberate privacy/minimization decision; not recommended without an explicit new product/legal decision" },
+    { "wave": "N/A", "objective": "Rules tenant configuration", "priority": "P3", "reason_deferred": "requires an undecided governance model (tenant vs platform-operator vs engine-registry-driven) before any implementation is justified" },
+    { "wave": "N/A", "objective": "Platform Admin", "priority": "N/A (deferred)", "reason_deferred": "no foundation exists; must remain deferred until explicitly prioritized with its own dedicated authorization-foundation wave" }
+  ]
+}

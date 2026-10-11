@@ -1,0 +1,364 @@
+{
+  "generated": "Wave 32A",
+  "pages": [
+    {
+      "route": "/",
+      "name": "Home",
+      "component": "src/pages/home.tsx",
+      "surface": "PUBLIC",
+      "environment": "N_A",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": [],
+      "notes": "Single-scroll marketing page (Hero/Problem/HowItWorks/Features/ProductSection/Trust/FinalCta). No separate Product/Solutions/Pricing/Docs/Security/Contact routes exist."
+    },
+    {
+      "route": "/signin",
+      "name": "SignIn",
+      "component": "src/pages/auth/sign-in.tsx",
+      "surface": "PUBLIC",
+      "environment": "N_A",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": ["POST /api/v1/auth/login"],
+      "permissions": [],
+      "tests": ["src/test/auth.test.tsx"],
+      "notes": "Guest-only (RequireAuth redirects signed-in users to /app)."
+    },
+    {
+      "route": "/signup",
+      "name": "SignUp",
+      "component": "src/pages/auth/sign-up.tsx",
+      "surface": "PUBLIC",
+      "environment": "N_A",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": ["POST /api/v1/auth/register"],
+      "permissions": [],
+      "tests": ["src/test/auth.test.tsx"],
+      "notes": "No password-recovery route exists anywhere in the app."
+    },
+    {
+      "route": "/sandbox/collector",
+      "name": "CollectorSandboxDemo",
+      "component": "src/pages/sandbox/collector-demo.tsx",
+      "surface": "DEVELOPER",
+      "environment": "SANDBOX",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": ["POST /collector/v1/collect"],
+      "permissions": [],
+      "tests": ["src/test/collector-sandbox-page.test.tsx", "src/test/e2e/collector-browser.spec.ts", "src/test/e2e/collector-e2e.node.test.ts"],
+      "notes": "Wave 30. Clearly labeled SANDBOX/TEST. Unauthenticated, outside /app shell and outside the tenant nav entirely -- reachable only by direct URL. No developer-facing link points to it from /app/api."
+    },
+    {
+      "route": "/app/onboarding",
+      "name": "Onboarding",
+      "component": "src/pages/app/onboarding.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": ["POST /api/v1/tenants"],
+      "permissions": [],
+      "tests": [],
+      "notes": "Reached only via RequireTenant's needs-tenant redirect. No direct test renders this route."
+    },
+    {
+      "route": "/app",
+      "name": "AppIndexRedirect",
+      "component": "src/App.tsx (Navigate to overview)",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": ["src/test/auth.test.tsx"],
+      "notes": "Pure redirect, no page content of its own."
+    },
+    {
+      "route": "/app/overview",
+      "name": "Overview",
+      "component": "src/pages/app/overview.tsx",
+      "surface": "TENANT",
+      "environment": "BOTH",
+      "status": "PARTIAL",
+      "backend_supported": true,
+      "api_dependencies": ["GET /api/v1/audit-logs"],
+      "permissions": [],
+      "tests": ["src/test/auth.test.tsx", "src/test/fraud-ui.test.tsx"],
+      "notes": "Audit-log widget is real; risk/assessment metrics and charts are sample-mode only (no GET /assessments exists)."
+    },
+    {
+      "route": "/app/assessments",
+      "name": "Assessments",
+      "component": "src/pages/app/assessments.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "EXISTS_PLACEHOLDER_SAMPLE",
+      "backend_supported": false,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": ["src/test/fraud-ui.test.tsx"],
+      "notes": "No GET /assessments (list) endpoint exists anywhere in fraud-platform-api -- POST /api/v1/assessments is write-only/synchronous. Honestly gated behind UnavailableState + opt-in sample mode. NOT tagged 'soon' in app-nav-links.ts despite having no live backend, unlike Analytics/Transactions/Cases -- an inconsistency, not a defect."
+    },
+    {
+      "route": "/app/assessments/sample/:sampleId",
+      "name": "SampleAssessmentDetail",
+      "component": "src/pages/app/assessment-detail.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "EXISTS_STATIC_DEMO",
+      "backend_supported": false,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": ["src/test/fraud-ui.test.tsx"],
+      "notes": "Explicitly sample-only by its own docstring: 'There is no GET /assessments/{id} in the platform API.' Real assessments can only be inspected via Decision Trace (paste)."
+    },
+    {
+      "route": "/app/transactions",
+      "name": "Transactions",
+      "component": "src/pages/app/transactions.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "EXISTS_PLACEHOLDER",
+      "backend_supported": false,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": [],
+      "notes": "Explicit UnavailableState: 'The platform API doesn't provide a way to list or search transactions.' Tagged soon:true in nav."
+    },
+    {
+      "route": "/app/signals",
+      "name": "Signals",
+      "component": "src/pages/app/signals.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "EXISTS_STATIC_DEMO",
+      "backend_supported": false,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": [],
+      "notes": "Static reference catalogue (src/data/fraud-detect/signals.ts) of SUPPLIED_SIGNALS/DERIVED_SIGNALS -- product documentation, not tenant-specific data. No live API. Not tagged soon."
+    },
+    {
+      "route": "/app/rules",
+      "name": "Rules",
+      "component": "src/pages/app/rules.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "EXISTS_STATIC_DEMO",
+      "backend_supported": false,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": [],
+      "notes": "Static F1-F10 rule catalogue (src/data/fraud-detect/catalogue.ts) -- no rule-configuration API exists in fraud-platform-api or fraud-engine's own tenant-facing surface. Not tagged soon."
+    },
+    {
+      "route": "/app/cases",
+      "name": "Cases",
+      "component": "src/pages/app/cases.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "EXISTS_PLACEHOLDER",
+      "backend_supported": false,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": [],
+      "notes": "Explicitly named PLANNED_STATES/PLANNED_PANELS in source. No case-management backend exists anywhere. Tagged soon:true."
+    },
+    {
+      "route": "/app/decision-trace",
+      "name": "DecisionTracePage",
+      "component": "src/pages/app/decision-trace.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": ["src/test/fraud-ui.test.tsx (DecisionTrace/AssessmentDetail components only, not the page route itself)"],
+      "notes": "Paste-based tool: the tenant pastes a REAL POST /api/v1/assessments response and the page renders it with parseAssessmentResponse(). No live fetch exists because no GET /assessments/{id} endpoint exists -- this is the correct, deliberate workaround, not a gap. No dedicated page-route-level test exists (only the underlying component is tested)."
+    },
+    {
+      "route": "/app/policies",
+      "name": "Policies",
+      "component": "src/pages/app/policies.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "EXISTS_STATIC_DEMO",
+      "backend_supported": false,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": [],
+      "notes": "MAJOR FINDING: no /api/policies route exists anywhere in fraud-platform-api (grepped: find app/api -iname '*polic*' returns nothing). TenantPolicyService/TenantPolicyVersion/draft-activate-retire lifecycle exists ONLY as internal service-layer code exercised by tests (tests/policy_support.py) -- there is no HTTP surface for it at all, for any client. This page is necessarily conceptual/static; it cannot become 'partial' without new backend work first."
+    },
+    {
+      "route": "/app/analytics",
+      "name": "Analytics",
+      "component": "src/pages/app/analytics.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "EXISTS_PLACEHOLDER_SAMPLE",
+      "backend_supported": false,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": [],
+      "notes": "Sample-mode only (same UnavailableState/SampleToggle pattern as Assessments). Tagged soon:true."
+    },
+    {
+      "route": "/app/api",
+      "name": "ApiPage",
+      "component": "src/pages/app/api.tsx",
+      "surface": "DEVELOPER",
+      "environment": "N_A",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": ["GET /api/v1/credentials"],
+      "permissions": [],
+      "tests": [],
+      "notes": "Real credentials table + static request/response documentation, explicitly labeled 'Examples only'. GAP: documents ONLY POST /assessments and POST /context-events -- the collector API (POST /api/v1/collector/tokens, POST /collector/v1/collect), fully built since Wave 28D, has ZERO developer-facing documentation anywhere in this dashboard. No dedicated page-route test exists."
+    },
+    {
+      "route": "/app/credentials",
+      "name": "Credentials",
+      "component": "src/pages/app/credentials.tsx",
+      "surface": "TENANT",
+      "environment": "SANDBOX",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": [
+        "GET /api/v1/credentials",
+        "POST /api/v1/credentials",
+        "POST /api/v1/credentials/{id}/rotate",
+        "POST /api/v1/credentials/{id}/revoke",
+        "GET /api/v1/tenants/current/members"
+      ],
+      "permissions": ["owner", "admin (mutating actions only; list is open to member)"],
+      "tests": ["src/test/auth.test.tsx", "src/test/credentials.test.tsx"],
+      "notes": "Fully functional: list/create/rotate/revoke, reveal-once secret dialog (never re-fetchable, matching backend), client-side role gating that mirrors the backend's own require_role(OWNER, ADMIN) enforcement (defense-in-depth, not the sole boundary). Environment column will only ever show 'sandbox' -- create_sandbox_credential is the only issuance path; live is not issuable via any UI or public API."
+    },
+    {
+      "route": "/app/audit-logs",
+      "name": "AuditLogs",
+      "component": "src/pages/app/audit-logs.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": ["GET /api/v1/audit-logs"],
+      "permissions": [],
+      "tests": ["src/test/credentials.test.tsx"],
+      "notes": "Open to any authenticated member role (no require_role on this route)."
+    },
+    {
+      "route": "/app/settings",
+      "name": "Settings",
+      "component": "src/pages/app/settings.tsx",
+      "surface": "TENANT",
+      "environment": "N_A",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": ["GET /api/v1/tenants/current", "GET /api/v1/tenants/current/members"],
+      "permissions": [],
+      "tests": ["src/test/credentials.test.tsx"],
+      "notes": "Organization info + read-only team-member list (explicitly labeled read-only: 'Inviting or changing members isn't supported by the platform API yet') + the signed-in user's own profile. No environment-settings section, no tenant-settings mutation (no PATCH /tenants/current endpoint exists)."
+    },
+    {
+      "route": "*",
+      "name": "NotFound",
+      "component": "src/pages/not-found.tsx",
+      "surface": "PUBLIC",
+      "environment": "N_A",
+      "status": "FUNCTIONAL",
+      "backend_supported": true,
+      "api_dependencies": [],
+      "permissions": [],
+      "tests": [],
+      "notes": "Standard 404 catch-all."
+    }
+  ],
+  "missing_pages": [
+    {
+      "route": "N/A (public)",
+      "name": "Pricing",
+      "surface": "PUBLIC",
+      "status": "MISSING",
+      "dependency_class": "P3",
+      "notes": "No backend dependency at all; purely a marketing/business decision."
+    },
+    {
+      "route": "N/A (public)",
+      "name": "Docs",
+      "surface": "PUBLIC",
+      "status": "MISSING",
+      "dependency_class": "P1",
+      "notes": "Would document the real, existing API contract (assessments, context-events, collector) -- the collector API in particular has no documentation anywhere today (see /app/api notes)."
+    },
+    {
+      "route": "N/A (public)",
+      "name": "Legal/Privacy/Terms",
+      "surface": "PUBLIC",
+      "status": "MISSING",
+      "dependency_class": "P2",
+      "notes": "No backend dependency; a product/legal decision, not an engineering blocker."
+    },
+    {
+      "route": "N/A (public)",
+      "name": "Password recovery",
+      "surface": "PUBLIC",
+      "status": "MISSING",
+      "dependency_class": "P1",
+      "notes": "No backend support exists for it either (no password-reset endpoint in fraud-platform-api) -- a genuine product gap, not merely a missing page."
+    },
+    {
+      "route": "/app/integrations or /app/developers/sandbox",
+      "name": "Collector setup / sandbox integration surface",
+      "surface": "DEVELOPER",
+      "status": "MISSING",
+      "dependency_class": "P0",
+      "notes": "The collector capability (token issuance, activation switches, rate limiting, CORS) is fully built and PostgreSQL-verified (Waves 28-31), but has NO representation anywhere inside the authenticated /app shell -- the only existing surface is the unauthenticated, nav-external /sandbox/collector demo page from Wave 30. A tenant using this dashboard today has no way to discover the collector exists at all."
+    },
+    {
+      "route": "N/A (platform admin)",
+      "name": "Any Platform Admin page",
+      "surface": "PLATFORM_ADMIN",
+      "status": "MISSING",
+      "dependency_class": "P3",
+      "notes": "No platform-admin role, permission, or API exists anywhere in fraud-platform-api (grepped: no 'platform-admin', 'admin role' beyond the per-tenant OWNER/ADMIN/MEMBER roles, no tenant-management-across-tenants endpoint). Building any Platform Admin UI now would require inventing backend capability this wave explicitly forbids inventing."
+    }
+  ],
+  "orphaned_backend_capabilities": [
+    {
+      "capability": "Policy versioning/activation (TenantPolicyService, draft/activate/retire)",
+      "has_ui": false,
+      "has_api_route": false,
+      "classification": "NOT APPROPRIATE FOR UI YET -- no HTTP route exists at all, for any client",
+      "notes": "Exercised only by tests/policy_support.py. Building a UI for this requires a new backend API first -- out of scope for an audit wave."
+    },
+    {
+      "capability": "Collector token issuance / ingestion / activation / rate limiting",
+      "has_ui": false,
+      "has_api_route": true,
+      "classification": "MISSING UI (P0, see missing_pages)",
+      "notes": "A real, production-grade, PostgreSQL-verified API exists (Waves 28-31) with zero tenant-facing representation inside /app."
+    },
+    {
+      "capability": "Configuration snapshots / reproducibility identity (execution_json)",
+      "has_ui": false,
+      "has_api_route": false,
+      "classification": "DEVELOPER-FACING, INTENTIONALLY NOT PUBLIC",
+      "notes": "assessment-api-v1.md section 9 explicitly withholds this from the public response -- no UI should surface it either, per the same contract."
+    },
+    {
+      "capability": "Credential rotation audit trail detail",
+      "has_ui": true,
+      "has_api_route": true,
+      "classification": "PARTIALLY SURFACED",
+      "notes": "Rotate/revoke actions themselves are in the Credentials UI; the resulting audit rows are only visible generically via /app/audit-logs, not cross-referenced from the Credentials page itself."
+    }
+  ]
+}
