@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-10-06",
   "wave": "38A",
-  "title": "Clarion Tenant Product Capability Reconciliation",
+  "title": "FraudDetect Tenant Product Capability Reconciliation",
   "repositories": [
     { "name": "fraud-platform-api", "role": "tenant platform API (auth, tenants, credentials, audit, assessments, collector, policies)" },
     { "name": "fraud-engine", "role": "stateless fraud scoring engine, platform-to-engine only, no tenant-facing surface" },

@@ -34,8 +34,8 @@ export function AssessmentProcessingState({ assessmentId, environment, submitted
       <Spinner size={22} className="text-accent" />
       <AssessmentStatusBadge status="processing" />
       <p className="max-w-md text-[13px] text-fg-muted">
-        This assessment is still being evaluated. No score, risk band or recommendation exists yet —
-        none is shown here rather than guessed at.
+        We are still checking this payment. The score and recommendation will appear here when it is
+        done. Refresh the page in a moment.
       </p>
       <dl className="mt-1 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs">
         <div className="flex gap-1.5">
@@ -69,8 +69,8 @@ export function AssessmentFailedState({ assessmentId, environment, submittedAt }
       <CircleSlash size={22} className="text-warn" aria-hidden="true" />
       <AssessmentStatusBadge status="failed" />
       <p className="max-w-md text-[13px] text-fg-muted">
-        No assessment was performed for this request. There is no score, risk band or recommendation
-        to show, and no fraud decision was made.
+        Something went wrong and this payment was not checked. There is no score or recommendation, and
+        nothing was decided. You can send the request again.
       </p>
       <dl className="mt-1 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs">
         <div className="flex gap-1.5">

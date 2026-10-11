@@ -90,7 +90,7 @@ describe("Overview activity-today metric (Wave 33B)", () => {
     const badge = await screen.findByText("1 today")
     expect(badge).toHaveAttribute(
       "title",
-      "Audit events recorded for your organization today, among your most recent activity.",
+      "Things that happened in your organization today, such as sign-ins, new keys and checks.",
     )
   })
 

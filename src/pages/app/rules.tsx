@@ -41,18 +41,17 @@ export function Rules() {
     <div className="mx-auto flex max-w-7xl flex-col gap-5">
       <PageHeader
         title="Rules"
-        description="The V1 rule catalogue: ten families of explainable checks that feed the risk score."
+        description="The warning signs we can look for, grouped by type. When one is found, it adds points to the risk score."
       />
 
-      <Alert variant="info" title="Read-only reference">
+      <Alert variant="info" title="For reference">
         <p>
-          This is the frozen rule catalogue — rule identity only. Each rule&apos;s live status, mode, weight, threshold and
-          last-updated time aren&apos;t exposed by the platform API yet, so they aren&apos;t shown, and rules can&apos;t be
-          edited here. Listing a rule doesn&apos;t mean it is active for your tenant.
+          This is the full list of rules. Not every rule is switched on for your account, and you can&apos;t change rules
+          here. To see which rules fired for a payment, open it from the Assessments page.
         </p>
       </Alert>
 
-      <div role="group" aria-label="Filter by family" className="flex flex-wrap gap-2">
+      <div role="group" aria-label="Filter by type" className="flex flex-wrap gap-2">
         <button
           type="button"
           aria-pressed={family === null}
@@ -62,7 +61,7 @@ export function Rules() {
             family === null ? "border-accent/50 bg-accent-soft text-accent" : "border-line-strong text-fg-muted hover:bg-panel-hover hover:text-fg",
           )}
         >
-          All families <span className="font-mono text-fg-subtle">{ALL_RULES.length}</span>
+          All types <span className="font-mono text-fg-subtle">{ALL_RULES.length}</span>
         </button>
         {FAMILY_META.map((meta) => {
           const count = ALL_RULES.filter((r) => r.familyId === meta.id).length
@@ -108,7 +107,7 @@ export function Rules() {
       </div>
 
       {rows.length === 0 ? (
-        <EmptyState icon={SearchX} title="No rules match" description="Try a different search or clear the family filter." />
+        <EmptyState icon={SearchX} title="No rules match" description="Try a different search or pick “All types”." />
       ) : (
         <DataTable<RuleRow>
           caption="Rule catalogue"

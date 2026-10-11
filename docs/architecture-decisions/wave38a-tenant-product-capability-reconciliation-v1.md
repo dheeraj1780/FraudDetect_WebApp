@@ -1,11 +1,11 @@
-# Wave 38A — Clarion Tenant Product Capability Reconciliation
+# Wave 38A — FraudDetect Tenant Product Capability Reconciliation
 
 Read-only audit/reconciliation wave. No product code was implemented. This document and
 `docs/tenant-product-capability-matrix-v1.json` are the only artifacts this wave produced.
 
 ## 1. Executive Summary
 
-Clarion's tenant product today has four genuinely functional surfaces — Assessments, Policies,
+FraudDetect's tenant product today has four genuinely functional surfaces — Assessments, Policies,
 Credentials/API, and Audit Logs — all backed by real, tested, PostgreSQL-verified HTTP APIs and
 real frontend integrations. Five surfaces are honest placeholders or static pages that correctly
 describe their own unavailability (Transactions, Cases, Rules, Signals) or are stale in their

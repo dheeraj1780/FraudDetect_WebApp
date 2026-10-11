@@ -11,6 +11,7 @@ import { LoadingState } from "@/components/ui/spinner"
 import { ErrorState } from "@/components/ui/states"
 import { AUDIT_PAGE_SIZE } from "@/lib/api/endpoints/auditLogs"
 import type { AuditLogOut } from "@/lib/api/types"
+import { describeAuditAction } from "@/lib/audit-actions"
 import { useAuditLogs } from "@/hooks/use-audit-logs"
 
 function formatDateTime(iso: string) {
@@ -24,13 +25,25 @@ function formatDateTime(iso: string) {
   })
 }
 
-/** Clarion platform operators appear by role only -- the API never exposes which operator acted. */
+/** FraudDetect platform operators appear by role only -- the API never exposes which operator acted. */
+const ACTOR_TEXT: Record<string, string> = {
+  operator: "FraudDetect team",
+  user: "Team member",
+  api_credential: "API key",
+  credential: "API key",
+  system: "System",
+}
+
 function actorLabel(actorType: string) {
-  return actorType === "operator" ? "Clarion operator" : actorType
+  return ACTOR_TEXT[actorType] ?? actorType
+}
+
+function entityLabel(entityType: string) {
+  return entityType.replace(/_/g, " ")
 }
 
 function shortId(id: string | null) {
-  if (!id) return "—"
+  if (!id) return ""
   return `${id.slice(0, 8)}…`
 }
 
@@ -66,8 +79,8 @@ export function AuditLogs() {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
-        title="Audit logs"
-        description="A record of material actions taken in this organization, newest first."
+        title="Audit log"
+        description="Everything important that happened in your organization, newest first: sign-ins, new keys, policy changes and more."
       />
 
       <form
@@ -78,7 +91,7 @@ export function AuditLogs() {
         }}
       >
         <label className="flex flex-col gap-1 text-[13px] text-fg-muted">
-          Filter by exact action
+          Show only one kind of action (exact name)
           <input
             className="h-9 w-72 rounded-control border border-line bg-panel px-3 font-mono text-xs text-fg"
             placeholder="e.g. credential.created"
@@ -114,8 +127,8 @@ export function AuditLogs() {
           title={action ? "No matching activity" : "No activity yet"}
           description={
             action
-              ? `No audit events with the action “${action}”.`
-              : "Actions like creating credentials or inviting members will show up here."
+              ? `Nothing recorded with the action “${action}”.`
+              : "Things like creating API keys or changing a policy will show up here."
           }
         />
       ) : (
@@ -127,12 +140,21 @@ export function AuditLogs() {
             getRowKey={(log) => log.id}
             columns={[
               { key: "time", header: "Time", cell: (log) => <span className="text-fg-muted">{formatDateTime(log.occurred_at)}</span> },
-              { key: "action", header: "Action", cell: (log) => <span className="font-mono text-xs text-fg">{log.action}</span> },
+              {
+                key: "action",
+                header: "What happened",
+                cell: (log) => (
+                  <span className="flex flex-col">
+                    <span className="text-fg">{describeAuditAction(log.action)}</span>
+                    <span className="font-mono text-[11px] text-fg-subtle">{log.action}</span>
+                  </span>
+                ),
+              },
               {
                 key: "actor",
-                header: "Actor",
+                header: "Who",
                 cell: (log) => (
-                  <span className="capitalize text-fg">
+                  <span className="text-fg">
                     {actorLabel(log.actor_type)}
                     {log.actor_id ? <span className="ml-1 font-mono text-xs normal-case text-fg-subtle">{shortId(log.actor_id)}</span> : null}
                   </span>
@@ -140,10 +162,10 @@ export function AuditLogs() {
               },
               {
                 key: "entity",
-                header: "Entity",
+                header: "On what",
                 cell: (log) => (
-                  <span className="text-fg">
-                    {log.entity_type}
+                  <span className="capitalize text-fg">
+                    {entityLabel(log.entity_type)}
                     {log.entity_id ? <span className="ml-1 font-mono text-xs text-fg-subtle">{shortId(log.entity_id)}</span> : null}
                   </span>
                 ),
@@ -174,15 +196,15 @@ export function AuditLogs() {
 
       <Dialog open={Boolean(detail)} onOpenChange={(open) => !open && setDetail(null)}>
         <DialogContent>
-          <DialogTitle>{detail?.action}</DialogTitle>
+          <DialogTitle>{detail ? describeAuditAction(detail.action) : null}</DialogTitle>
           <DialogDescription>{detail ? formatDateTime(detail.occurred_at) : null}</DialogDescription>
 
           {detail ? (
             <dl className="mt-4 flex flex-col gap-3 text-sm">
-              <Row label="Actor" value={`${actorLabel(detail.actor_type)} ${detail.actor_id ? shortId(detail.actor_id) : ""}`.trim()} />
-              <Row label="Entity" value={`${detail.entity_type} ${shortId(detail.entity_id)}`} />
+              <Row label="Who" value={`${actorLabel(detail.actor_type)} ${detail.actor_id ? shortId(detail.actor_id) : ""}`.trim()} />
+              <Row label="On what" value={`${entityLabel(detail.entity_type)} ${shortId(detail.entity_id)}`.trim()} />
               {detail.reason ? <Row label="Reason" value={detail.reason} /> : null}
-              {detail.correlation_id ? <Row label="Correlation ID" value={detail.correlation_id} mono /> : null}
+              {detail.correlation_id ? <Row label="Request ID (for support)" value={detail.correlation_id} mono /> : null}
               {detail.before_json ? <JsonRow label="Before" value={detail.before_json} /> : null}
               {detail.after_json ? <JsonRow label="After" value={detail.after_json} /> : null}
             </dl>

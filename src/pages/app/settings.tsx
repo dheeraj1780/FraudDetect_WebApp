@@ -43,7 +43,7 @@ export function Settings() {
     try {
       await updateRole.mutateAsync({ membershipId: member.id, body: { role } })
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : "Failed to update role.")
+      setActionError(err instanceof ApiError ? err.message : "Could not change the role.")
     }
   }
 
@@ -54,7 +54,7 @@ export function Settings() {
       await removeMember.mutateAsync(removeTarget.id)
       setRemoveTarget(null)
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : "Failed to remove member.")
+      setActionError(err instanceof ApiError ? err.message : "Could not remove this person.")
     }
   }
 
@@ -120,7 +120,7 @@ export function Settings() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Settings" description="Organization details and team membership." />
+      <PageHeader title="Settings" description="Your organization, your team and your own sign-in security." />
 
       <div className="flex flex-col gap-5">
         <Card>
@@ -132,7 +132,7 @@ export function Settings() {
                 <dd className="mt-0.5 font-medium text-fg">{tenant.name}</dd>
               </div>
               <div>
-                <dt className="text-fg-subtle">Organization ID</dt>
+                <dt className="text-fg-subtle">Organization ID (for support)</dt>
                 <dd className="mt-0.5 break-all font-mono text-xs text-fg">{tenant.id}</dd>
               </div>
               <div>
@@ -153,8 +153,8 @@ export function Settings() {
           <CardTitle>Team members</CardTitle>
           <CardDescription className="mt-1">
             {canManageMembers
-              ? "Change a member's role or remove them below. Adding a new member isn't supported by the platform API yet."
-              : "Read-only. Only owners can change roles or remove members."}
+              ? "Change someone's role or remove them. Inviting new people isn't possible yet."
+              : "Only the owner can change roles or remove people."}
           </CardDescription>
 
           {actionError && !removeTarget ? (
@@ -202,7 +202,7 @@ export function Settings() {
           }
         }}
         title="Remove this member?"
-        description={`${removeTarget?.email ?? "This member"} will immediately lose access to this organization. This cannot be undone.`}
+        description={`${removeTarget?.email ?? "This member"} will lose access right away. This cannot be undone.`}
         confirmLabel="Remove member"
         onConfirm={() => void handleRemove()}
         pending={removeMember.isPending}

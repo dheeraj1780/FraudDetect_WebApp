@@ -14,7 +14,7 @@ function Frame({ title, children }: { title: string; children: React.ReactNode }
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
       <div className="w-full max-w-md rounded-panel border border-line bg-panel p-6">
-        <p className="text-xs font-medium uppercase tracking-wider text-fg-subtle">Clarion · Operator console</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-fg-subtle">FraudDetect · Operator console</p>
         <h1 className="mt-1 text-lg font-semibold text-fg">{title}</h1>
         <div className="mt-4">{children}</div>
       </div>

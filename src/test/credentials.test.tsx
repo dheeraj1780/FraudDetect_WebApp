@@ -22,10 +22,10 @@ describe("credentials page", () => {
     renderApp("/app/credentials", { signedIn: true })
 
     await user.click(await screen.findByRole("button", { name: "Create credential" }))
-    const createDialog = await screen.findByRole("dialog", { name: "Create sandbox credential" })
+    const createDialog = await screen.findByRole("dialog", { name: "Create a SANDBOX API key" })
     await user.click(within(createDialog).getByRole("button", { name: "Create credential" }))
 
-    const reveal = await screen.findByRole("dialog", { name: "Your new API credential" })
+    const reveal = await screen.findByRole("dialog", { name: "Your new API key" })
     expect(within(reveal).getByText("sk_sandbox_newkey-ONE-TIME-SECRET-VALUE")).toBeInTheDocument()
     expect(within(reveal).getByText("This is shown only once")).toBeInTheDocument()
     const stored = Object.keys(localStorage).map((key) => localStorage.getItem(key) ?? "")
@@ -47,17 +47,17 @@ describe("credentials page", () => {
     const user = userEvent.setup()
     renderApp("/app/credentials", { signedIn: true })
 
-    await user.click(await screen.findByRole("button", { name: /Revoke credential My first key/ }))
-    const dialog = await screen.findByRole("dialog", { name: "Revoke this credential?" })
+    await user.click(await screen.findByRole("button", { name: /Turn off key My first key/ }))
+    const dialog = await screen.findByRole("dialog", { name: "Turn off this key?" })
     expect(revokeSpy).not.toHaveBeenCalled()
 
     await user.click(within(dialog).getByRole("button", { name: "Cancel" }))
-    expect(screen.queryByRole("dialog", { name: "Revoke this credential?" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("dialog", { name: "Turn off this key?" })).not.toBeInTheDocument()
     expect(revokeSpy).not.toHaveBeenCalled()
 
-    await user.click(screen.getByRole("button", { name: /Revoke credential My first key/ }))
-    const again = await screen.findByRole("dialog", { name: "Revoke this credential?" })
-    await user.click(within(again).getByRole("button", { name: "Revoke credential" }))
+    await user.click(screen.getByRole("button", { name: /Turn off key My first key/ }))
+    const again = await screen.findByRole("dialog", { name: "Turn off this key?" })
+    await user.click(within(again).getByRole("button", { name: "Turn off key" }))
     await vi.waitFor(() => expect(revokeSpy).toHaveBeenCalledTimes(1))
   })
 
@@ -70,9 +70,9 @@ describe("credentials page", () => {
     const user = userEvent.setup()
     renderApp("/app/credentials", { signedIn: true })
 
-    await user.click(await screen.findByRole("button", { name: /Rotate credential My first key/ }))
-    const confirm = await screen.findByRole("dialog", { name: "Rotate this credential?" })
-    await user.click(within(confirm).getByRole("button", { name: "Rotate credential" }))
+    await user.click(await screen.findByRole("button", { name: /Replace key My first key/ }))
+    const confirm = await screen.findByRole("dialog", { name: "Replace this key?" })
+    await user.click(within(confirm).getByRole("button", { name: "Replace key" }))
 
     expect(await screen.findByText("sk_sandbox_newkey-ONE-TIME-SECRET-VALUE")).toBeInTheDocument()
   })
@@ -86,14 +86,14 @@ describe("credentials page", () => {
     renderApp("/app/credentials", { signedIn: true })
 
     expect(await screen.findByText(/Only owners and admins can create/)).toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: /Revoke credential/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /Turn off key/ })).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: "Create credential" })).not.toBeInTheDocument()
   })
 
   it("shows an empty state when there are no credentials", async () => {
     server.use(http.get(`${API}/credentials`, () => HttpResponse.json([])))
     renderApp("/app/credentials", { signedIn: true })
-    expect(await screen.findByText("No credentials yet")).toBeInTheDocument()
+    expect(await screen.findByText("No API keys yet")).toBeInTheDocument()
   })
 
   it("shows an error state when credentials fail to load", async () => {

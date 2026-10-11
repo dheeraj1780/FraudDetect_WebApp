@@ -1,14 +1,14 @@
 import { Badge } from "@/components/ui/badge"
 import type { SignalDescriptor } from "@/data/fraud-detect/signals"
 
-/** One input Fraud Detect accepts or derives. Describes the input only — never a live signal value. */
+/** One input FraudDetect accepts or derives. Describes the input only — never a live signal value. */
 export function SignalCard({ signal }: { signal: SignalDescriptor }) {
   return (
     <li className="flex flex-col gap-3 rounded-panel border border-line bg-panel p-4 transition-colors hover:border-line-strong">
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-sm font-semibold text-fg">{signal.name}</h3>
         <Badge variant={signal.source === "supplied" ? "neutral" : "accent"} className="shrink-0">
-          {signal.source === "supplied" ? "Supplied by you" : "Derived by platform"}
+          {signal.source === "supplied" ? "You send this" : "We work this out"}
         </Badge>
       </div>
       <p className="text-[13px] text-fg-muted">{signal.summary}</p>

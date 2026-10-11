@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Fraud Detect design tokens — the single source of truth for colour, radius,
+ * FraudDetect design tokens — the single source of truth for colour, radius,
  * type and motion. A dark, security-console language in the BrandSecOps family
  * (near-black canvas, low-contrast borders, one restrained accent) that is
  * original to this product. Components reference the generated utilities

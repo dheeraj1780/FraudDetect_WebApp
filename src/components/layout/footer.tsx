@@ -10,7 +10,7 @@ export function Footer() {
         <div className="flex flex-col gap-4">
           <Logo />
           <p className="max-w-xs text-[13px] leading-relaxed text-fg-muted">
-            Real-time fraud detection for payments, accounts and digital transactions — a BrandSecOps security product.
+            Real-time fraud detection for payments, accounts and digital transactions. A BrandSecOps security product.
           </p>
         </div>
 
@@ -42,7 +42,7 @@ export function Footer() {
 
       <div className="border-t border-line">
         <Container className="flex flex-col items-start justify-between gap-2 py-5 sm:flex-row sm:items-center">
-          <p className="text-xs text-fg-subtle">© {new Date().getFullYear()} BrandSecOps. Fraud Detect is a BrandSecOps product.</p>
+          <p className="text-xs text-fg-subtle">© {new Date().getFullYear()} BrandSecOps. FraudDetect is a BrandSecOps product.</p>
           <p className="text-xs text-fg-subtle">Early access · sandbox environment · rule-based, not machine learning.</p>
         </Container>
       </div>

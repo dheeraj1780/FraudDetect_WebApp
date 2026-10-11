@@ -8,6 +8,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { useCreatePolicyDraft } from "@/hooks/use-policies"
 import { ApiError } from "@/lib/api/errors"
 import type { EnvironmentName, PolicyThreshold, PolicyVersionOut } from "@/lib/api/types"
+import { checkThresholds } from "@/lib/policy-thresholds"
 import { RECOMMENDATION_STYLES, type Recommendation } from "@/lib/fraud/vocabulary"
 
 const DEFAULT_THRESHOLDS: PolicyThreshold[] = [
@@ -41,6 +42,11 @@ export function PolicyDraftDialog({ open, onOpenChange, environment, policyId, o
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     setError(null)
+    const problem = checkThresholds(thresholds)
+    if (problem) {
+      setError(problem)
+      return
+    }
     try {
       const created = await createDraft.mutateAsync({
         environment,
@@ -60,24 +66,24 @@ export function PolicyDraftDialog({ open, onOpenChange, environment, policyId, o
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogTitle>{policyId ? "Draft a new policy version" : "Create a new policy"}</DialogTitle>
+        <DialogTitle>{policyId ? "New version of this policy" : "Create a policy"}</DialogTitle>
         <DialogDescription>
           {policyId
-            ? "A new DRAFT version in this policy's history. It has no effect until you activate it."
-            : `A new DRAFT policy, scoped to your ${environment} environment. It has no effect until you activate it.`}
+            ? "This is saved as a draft. Nothing changes until you turn it on."
+            : `For ${environment === "live" ? "LIVE" : "SANDBOX"}. This is saved as a draft. Nothing changes until you turn it on.`}
         </DialogDescription>
 
         <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-4">
           {error ? <Alert variant="error">{error}</Alert> : null}
 
           <div className="flex flex-col gap-2">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-fg-subtle">Thresholds</p>
+            <p className="text-[11px] font-medium uppercase tracking-wider text-fg-subtle">Rules</p>
             <p className="text-xs text-fg-subtle">
-              Unique, ascending minimum scores (0–100). The lowest must be 0 or below so every score maps to a
-              recommendation.
+              Start the first row at 0. Each row below needs a higher score (up to 100). A row applies from its
+              score up to the next row.
             </p>
             <div className="flex gap-2 px-0.5 text-[11px] font-medium uppercase tracking-wider text-fg-subtle">
-              <span className="w-28">Minimum score</span>
+              <span className="w-28">From score</span>
               <span className="flex-1">Recommendation</span>
             </div>
             {thresholds.map((row, index) => (
@@ -88,7 +94,7 @@ export function PolicyDraftDialog({ open, onOpenChange, environment, policyId, o
                     min={0}
                     max={100}
                     step="any"
-                    aria-label={`Minimum score for row ${index + 1}`}
+                    aria-label={`From score for row ${index + 1}`}
                     value={row.minimum_score}
                     onChange={(e) => updateRow(index, { minimum_score: Number(e.target.value) })}
                     disabled={createDraft.isPending}
@@ -124,13 +130,13 @@ export function PolicyDraftDialog({ open, onOpenChange, environment, policyId, o
             ))}
             <Button type="button" variant="secondary" size="sm" onClick={addRow} disabled={createDraft.isPending} className="self-start">
               <Plus size={14} aria-hidden="true" />
-              Add threshold
+              Add row
             </Button>
           </div>
 
           <Input
             aria-label="Reason (optional)"
-            placeholder="Reason (optional) — recorded on the audit log"
+            placeholder="Reason (optional, saved in the audit log)"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             disabled={createDraft.isPending}

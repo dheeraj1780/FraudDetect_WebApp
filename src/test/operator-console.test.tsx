@@ -41,7 +41,7 @@ describe("operator console", () => {
   it("is a separate realm: no operator token means sign-in, and tenant sign-in is not used", async () => {
     renderApp("/operator/requests")
     expect(await screen.findByRole("heading", { name: "Sign in" })).toBeInTheDocument()
-    expect(screen.getByText("Clarion · Operator console")).toBeInTheDocument()
+    expect(screen.getByText("FraudDetect · Operator console")).toBeInTheDocument()
   })
 
   it("signs in, enrolls MFA from a QR image and shows recovery codes once", async () => {

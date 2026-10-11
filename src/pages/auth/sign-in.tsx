@@ -54,7 +54,7 @@ export function SignIn() {
   return (
     <AuthLayout
       title="Sign in"
-      description="Sign in to Fraud Detect."
+      description="Sign in to FraudDetect."
       footer={
         <>
           Don't have an account?{" "}

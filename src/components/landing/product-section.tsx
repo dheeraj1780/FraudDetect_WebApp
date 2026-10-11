@@ -12,7 +12,7 @@ export function ProductSection() {
             id="product-heading"
             eyebrow="Product"
             title="One console for risk, rules and decisions."
-            description="The dashboard below is rendered from the same components as the product, using clearly-labelled sample data — not real assessments."
+            description="The dashboard below is rendered from the same components as the product, using clearly-labelled sample data, not real assessments."
           />
         </Reveal>
         <Reveal delay={100} className="mt-12">

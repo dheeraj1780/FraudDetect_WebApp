@@ -32,7 +32,7 @@ describe("analytics page: real aggregate dashboard (Wave 41)", () => {
     renderApp("/app/analytics", { signedIn: true })
     const summary = await screen.findByRole("region", { name: "Summary" })
     expect(within(summary).getAllByText("0").length).toBeGreaterThan(0)
-    expect(screen.getAllByText("No assessments in this range.").length).toBeGreaterThan(0)
+    expect(screen.getAllByText("No checks in this period.").length).toBeGreaterThan(0)
     expect(screen.queryByText(/failed to load/i)).not.toBeInTheDocument()
   })
 
@@ -44,7 +44,7 @@ describe("analytics page: real aggregate dashboard (Wave 41)", () => {
     )
     renderApp("/app/analytics", { signedIn: true })
     expect(await screen.findByText(/Couldn't load analytics: Server exploded\./)).toBeInTheDocument()
-    expect(screen.queryByText("No assessments in this range.")).not.toBeInTheDocument()
+    expect(screen.queryByText("No checks in this period.")).not.toBeInTheDocument()
   })
 
   it("an unavailable latency percentile is shown as a dash, not fabricated", async () => {
@@ -67,9 +67,9 @@ describe("analytics page: real aggregate dashboard (Wave 41)", () => {
     renderApp("/app/analytics", { signedIn: true })
     await screen.findByRole("region", { name: "Summary" })
 
-    await user.click(screen.getByRole("button", { name: "Live" }))
+    await user.click(screen.getByRole("button", { name: "LIVE only" }))
     await waitFor(() => expect(lastEnvironment).toBe("live"))
-    expect(screen.getByRole("button", { name: "Live" })).toHaveAttribute("aria-pressed", "true")
+    expect(screen.getByRole("button", { name: "LIVE only" })).toHaveAttribute("aria-pressed", "true")
   })
 
   it("the date range filter is sent to the API and reflected in the URL", async () => {
@@ -101,29 +101,29 @@ describe("analytics page: real aggregate dashboard (Wave 41)", () => {
     renderApp("/app/analytics?environment=live", { signedIn: true })
     await screen.findByRole("region", { name: "Summary" })
     expect(lastEnvironment).toBe("live")
-    expect(screen.getByRole("button", { name: "Live" })).toHaveAttribute("aria-pressed", "true")
+    expect(screen.getByRole("button", { name: "LIVE only" })).toHaveAttribute("aria-pressed", "true")
   })
 
   it("renders real risk-band and recommendation distributions with the UNAVAILABLE bucket labelled honestly", async () => {
     renderApp("/app/analytics", { signedIn: true })
-    const risk = await screen.findByRole("region", { name: "Risk distribution" })
+    const risk = await screen.findByRole("region", { name: "Risk levels" })
     expect(within(risk).getByText("Low")).toBeInTheDocument()
     expect(within(risk).getByText("Not available")).toBeInTheDocument()
 
-    const rec = screen.getByRole("region", { name: "Policy recommendation distribution" })
+    const rec = screen.getByRole("region", { name: "What your policy recommended" })
     expect(within(rec).getByText("Proceed")).toBeInTheDocument()
     expect(within(rec).getByText("Not available")).toBeInTheDocument()
   })
 
   it("renders the real assessment-volume time series", async () => {
     renderApp("/app/analytics", { signedIn: true })
-    const volume = await screen.findByRole("region", { name: "Assessment volume" })
+    const volume = await screen.findByRole("region", { name: "Checks per day" })
     expect(within(volume).getByRole("img")).toBeInTheDocument()
   })
 
   it("renders the real policy-version usage section", async () => {
     renderApp("/app/analytics", { signedIn: true })
-    const section = await screen.findByRole("region", { name: "Policy version usage" })
+    const section = await screen.findByRole("region", { name: "Policy versions used" })
     expect(within(section).getByText("38")).toBeInTheDocument()
   })
 

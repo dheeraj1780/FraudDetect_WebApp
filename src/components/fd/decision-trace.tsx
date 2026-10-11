@@ -1,11 +1,11 @@
 import * as Accordion from "@radix-ui/react-accordion"
 import { ChevronDown, CircleSlash } from "lucide-react"
 import type { ReactNode } from "react"
-import { EvaluationStateBadge, RecommendationBadge, RiskBadge, RuleStateBadge } from "@/components/fd/risk-badge"
+import { EvaluationStateBadge, RecommendationBadge, RiskBadge } from "@/components/fd/risk-badge"
 import { RuleCard } from "@/components/fd/rule-card"
 import type { AssessmentOut } from "@/lib/api/types"
 import { parseReasonCode } from "@/lib/fraud/reason"
-import { EVALUATION_STATE_INFO, POLICY_STATUS_INFO, RULE_STATE_ORDER, type EvaluationState } from "@/lib/fraud/vocabulary"
+import { EVALUATION_STATE_INFO, POLICY_STATUS_INFO, type EvaluationState } from "@/lib/fraud/vocabulary"
 import { cn } from "@/lib/utils"
 
 type StageId =
@@ -68,42 +68,23 @@ function buildStages(a: AssessmentOut): Stage[] {
   return [
     {
       id: "input",
-      title: "Input",
-      question: "What did the platform receive?",
+      title: "Received",
+      question: "When did we get it?",
       summary: <span className="text-fg-muted">Received {formatTimestamp(a.submitted_at)}</span>,
       detail: (
         <div className="flex flex-col gap-3">
           <KeyValues items={[["Submitted", a.submitted_at], ["Completed", a.completed_at]]} />
-          <NotReturned>The submitted evidence itself is not echoed back in the response.</NotReturned>
         </div>
-      ),
-    },
-    {
-      id: "normalization",
-      title: "Normalization",
-      question: "How was the input standardised?",
-      summary: null,
-      detail: <NotReturned>Normalization output isn't returned by the API in this release.</NotReturned>,
-    },
-    {
-      id: "signals",
-      title: "Signals",
-      question: "Which signals were extracted?",
-      summary: null,
-      detail: (
-        <NotReturned>
-          Extracted signals aren't returned individually. The rules that fired are shown in the next stage.
-        </NotReturned>
       ),
     },
     {
       id: "rules",
       title: "Rules",
-      question: "Which rules fired?",
+      question: "Which warning signs did we find?",
       summary: (
         <span className="flex flex-wrap items-center gap-2">
           <span className="font-mono text-fg">{reasons.length}</span>
-          <span className="text-fg-muted">{reasons.length === 1 ? "rule triggered" : "rules triggered"}</span>
+          <span className="text-fg-muted">{reasons.length === 1 ? "warning sign" : "warning signs"}</span>
           <EvaluationStateBadge state={state} />
         </span>
       ),
@@ -111,11 +92,10 @@ function buildStages(a: AssessmentOut): Stage[] {
         <div className="flex flex-col gap-4">
           {stateInfo ? (
             <p className="text-[13px] text-fg-muted">
-              <span className="font-semibold text-fg">{stateInfo.label}.</span> {stateInfo.description} This describes
-              how fully the applicable rules could be evaluated — it is not a risk or confidence measure.
+              <span className="font-semibold text-fg">{stateInfo.label}.</span> {stateInfo.description}
             </p>
           ) : (
-            <NotReturned>Evaluation coverage wasn't reported for this assessment.</NotReturned>
+            <NotReturned>We didn't report how complete this check was.</NotReturned>
           )}
           {reasons.length > 0 ? (
             <ul className="flex flex-col gap-2" aria-label="Triggered rules">
@@ -125,34 +105,22 @@ function buildStages(a: AssessmentOut): Stage[] {
             </ul>
           ) : (
             <p className="rounded-panel border border-dashed border-line-strong px-4 py-3 text-[13px] text-fg-muted">
-              No rules were reported as triggered.
+              No warning signs were found.
               {state === "NOT_EVALUABLE"
-                ? " Because nothing could be evaluated, this is not the same as “assessed and clean”."
+                ? " But no rule could run, so this does not mean the payment is safe."
                 : null}
             </p>
           )}
-          <div className="rounded-panel border border-line bg-canvas/40 p-3">
-            <p className="mb-2 text-[11px] uppercase tracking-wider text-fg-subtle">Rule outcomes</p>
-            <div className="flex flex-wrap gap-2">
-              {RULE_STATE_ORDER.map((s) => (
-                <RuleStateBadge key={s} state={s} />
-              ))}
-            </div>
-            <p className="mt-2 text-xs text-fg-subtle">
-              The API reports triggered rules only. Not-triggered, insufficient-data and shadow outcomes, and each
-              rule&apos;s evidence, threshold, observed value and contribution, aren&apos;t returned in this release.
-            </p>
-          </div>
         </div>
       ),
     },
     {
       id: "score",
       title: "Score",
-      question: "How were the rules combined?",
+      question: "How risky does it look?",
       summary: (
         <span className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-fg">{a.risk_score === null ? "—" : a.risk_score}</span>
+          <span className="font-mono text-fg">{a.risk_score === null ? "None" : a.risk_score}</span>
           <RiskBadge band={a.risk_band} />
         </span>
       ),
@@ -161,41 +129,34 @@ function buildStages(a: AssessmentOut): Stage[] {
           <KeyValues
             items={[
               ["Risk score", a.risk_score === null ? "Not scored" : String(a.risk_score)],
-              ["Risk band", a.risk_band ?? "Not scored"],
+              ["Risk level", a.risk_band ?? "Not set up yet"],
               ["Scoring model", a.engine.scoring_model_version],
               ["Scoring configuration", a.engine.scoring_configuration_version],
             ]}
           />
           <p className="text-xs text-fg-subtle">
-            The score describes risk. It is not the final customer action — that belongs to policy.
+            Each warning sign adds points. The total is the risk score, from 0 (no warning signs) to 100.
           </p>
         </div>
       ),
     },
     {
-      id: "confidence",
-      title: "Confidence",
-      question: "How much evidence backs the score?",
-      summary: null,
-      detail: <NotReturned>Confidence and data-quality values aren&apos;t returned by the public API in this release.</NotReturned>,
-    },
-    {
       id: "policy",
       title: "Policy",
-      question: "Which policy was applied?",
-      summary: <span className="font-mono text-fg">{a.policy.status}</span>,
+      question: "Which policy was used?",
+      summary: <span className="text-fg">{a.policy.status === "EXECUTED" ? `Version ${a.policy.policy_version ?? "?"}` : "Not used"}</span>,
       detail: (
         <div className="flex flex-col gap-3">
           <KeyValues
             items={[
               ["Status", a.policy.status],
-              ["Policy", a.policy.policy_id ?? "—"],
-              ["Policy version", a.policy.policy_version ?? "—"],
+              ["Policy", a.policy.policy_id ?? "None"],
+              ["Policy version", a.policy.policy_version ?? "None"],
               ["Policy model", a.engine.policy_model_version],
             ]}
           />
           <p className="text-xs text-fg-subtle">
-            {POLICY_STATUS_INFO[a.policy.status] ?? "Policy status as reported by the engine."}
+            {POLICY_STATUS_INFO[a.policy.status] ?? "Policy status as reported."}
           </p>
         </div>
       ),
@@ -203,18 +164,18 @@ function buildStages(a: AssessmentOut): Stage[] {
     {
       id: "recommendation",
       title: "Recommendation",
-      question: "What does policy recommend?",
+      question: "What should you do?",
       summary: <RecommendationBadge value={a.policy.recommendation} />,
       detail: (
         <div className="flex flex-col gap-3">
           <RecommendationBadge value={a.policy.recommendation} size="lg" className="self-start" />
           {a.policy.recommendation === null ? (
             <p className="text-xs text-fg-subtle">
-              No recommendation was produced. A missing recommendation is never “proceed” — check the policy status.
+              There is no recommendation. Don't treat that as “proceed”. Check the policy step above.
             </p>
           ) : (
             <p className="text-xs text-fg-subtle">
-              A recommendation from policy, not a guarantee. Your application decides how to act on it.
+              This is advice from your policy, not a guarantee. Your own system decides what to do with it.
             </p>
           )}
         </div>
@@ -224,7 +185,7 @@ function buildStages(a: AssessmentOut): Stage[] {
 }
 
 /**
- * The signature Fraud Detect view: why did this assessment come out the way it did?
+ * The signature FraudDetect view: why did this assessment come out the way it did?
  * Renders exactly what the API returned. Stages whose output the API does not expose say so
  * instead of showing invented values. Each stage is a keyboard-operable disclosure.
  */
@@ -237,7 +198,7 @@ export function DecisionTrace({ assessment, className }: { assessment: Assessmen
       <h2 id="decision-trace-heading" className="text-sm font-semibold text-fg">
         Decision trace
       </h2>
-      <p className="mt-0.5 text-[13px] text-fg-muted">Why did Fraud Detect make this assessment?</p>
+      <p className="mt-0.5 text-[13px] text-fg-muted">How we got from your request to the recommendation, step by step.</p>
 
       <Accordion.Root type="multiple" defaultValue={["rules", "recommendation"]} className="mt-4">
         <ol className="relative flex flex-col">

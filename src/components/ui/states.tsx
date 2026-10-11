@@ -82,7 +82,7 @@ export function ErrorState({ what, error, onRetry }: ErrorStateProps) {
       }
     >
       <p>{detail}</p>
-      <p className="mt-1 text-fg-subtle">This is a load failure — it does not mean there is no data.</p>
+      <p className="mt-1 text-fg-subtle">Something went wrong while loading. Your data is still there; try again.</p>
     </StateShell>
   )
 }
@@ -91,7 +91,7 @@ export function ErrorState({ what, error, onRetry }: ErrorStateProps) {
 export function UnauthorizedState({ detail }: { detail?: string }) {
   return (
     <StateShell icon={Lock} tone="warning" role="alert" title="You don't have access to this">
-      <p>{detail ?? "Your role doesn't include permission to view this. Ask an organization owner or admin."}</p>
+      <p>{detail ?? "Your role can't see this. Ask your organization owner or an admin."}</p>
     </StateShell>
   )
 }

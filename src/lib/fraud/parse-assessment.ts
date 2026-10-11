@@ -29,7 +29,7 @@ export function parseAssessmentResponse(text: string): ParseResult {
   if (!isRecord(raw)) return { ok: false, error: "Expected a JSON object (the assessment response)." }
 
   if (typeof raw.assessment_id !== "string" || raw.assessment_id.length === 0) {
-    return { ok: false, error: "Missing assessment_id — this doesn't look like an assessment response." }
+    return { ok: false, error: "Missing assessment_id. This doesn't look like an assessment response." }
   }
   if (raw.status !== "completed") return { ok: false, error: "Expected status “completed”." }
   if (!isIsoDate(raw.submitted_at) || !isIsoDate(raw.completed_at)) {

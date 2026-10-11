@@ -68,7 +68,7 @@ export function SignUp() {
   return (
     <AuthLayout
       title="Create your account"
-      description="Create a Fraud Detect workspace for your organization."
+      description="Create a FraudDetect workspace for your organization."
       footer={
         <>
           Already have an account?{" "}

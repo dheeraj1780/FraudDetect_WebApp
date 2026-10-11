@@ -1,5 +1,5 @@
 /**
- * The Fraud Detect vocabulary, taken from the real contract — not invented:
+ * The FraudDetect vocabulary, taken from the real contract — not invented:
  *  - risk bands: the engine emits LOW | MEDIUM | HIGH (RiskBand in engine_contract.py).
  *    CRITICAL exists in the design system's SEVERITY scale (for UI status use) but the
  *    engine never returns it as a risk band.
@@ -81,28 +81,28 @@ export interface RecommendationStyle {
 export const RECOMMENDATION_STYLES: Record<Recommendation, RecommendationStyle> = {
   PROCEED: {
     label: "Proceed",
-    description: "Policy recommends letting the payment continue.",
+    description: "Your policy says: let the payment go through.",
     text: "text-ok",
     bg: "bg-ok/10",
     border: "border-ok/30",
   },
   STEP_UP: {
     label: "Step-up",
-    description: "Policy recommends additional verification before continuing.",
+    description: "Your policy says: ask the customer to verify first, for example with a one-time code.",
     text: "text-info",
     bg: "bg-info/10",
     border: "border-info/30",
   },
   REVIEW: {
     label: "Manual review",
-    description: "Policy recommends routing to a person for review.",
+    description: "Your policy says: have a person on your team look at it before deciding.",
     text: "text-warn",
     bg: "bg-warn/10",
     border: "border-warn/30",
   },
   BLOCK: {
     label: "Block",
-    description: "Policy recommends blocking the payment.",
+    description: "Your policy says: stop the payment.",
     text: "text-danger",
     bg: "bg-danger/10",
     border: "border-danger/30",
@@ -118,24 +118,24 @@ export type EvaluationState = "EVALUATED" | "PARTIALLY_EVALUATED" | "NOT_EVALUAB
 /** A coverage fact about how fully the applicable rules could be evaluated — not a risk or confidence measure. */
 export const EVALUATION_STATE_INFO: Record<EvaluationState, { label: string; description: string; tone: "ok" | "warn" | "neutral" }> = {
   EVALUATED: {
-    label: "Evaluated",
-    description: "The applicable rules were evaluated.",
+    label: "All checks ran",
+    description: "Every rule that applies to this payment was checked.",
     tone: "ok",
   },
   PARTIALLY_EVALUATED: {
-    label: "Partially evaluated",
-    description: "Some applicable rules could not be fully evaluated with the data supplied.",
+    label: "Some checks skipped",
+    description: "Some rules could not run because information was missing, such as the customer's past payments. The score only counts the rules that ran.",
     tone: "warn",
   },
   NOT_EVALUABLE: {
-    label: "Not evaluable",
+    label: "Could not check",
     description:
-      "Nothing could be evaluated. A score of 0 here means “nothing could be evaluated”, not “assessed and clean”.",
+      "No rule could run with the information sent. A score of 0 here means nothing was checked, not that the payment is safe.",
     tone: "warn",
   },
   NO_APPLICABLE_RULES: {
-    label: "No applicable rules",
-    description: "No configured rule applied to this assessment.",
+    label: "No rules apply",
+    description: "None of your rules apply to this kind of payment or event.",
     tone: "neutral",
   },
 }
@@ -148,26 +148,26 @@ export const ASSESSMENT_STATUS_INFO: Record<
 > = {
   processing: {
     label: "Processing",
-    description: "The engine has not finished evaluating this assessment yet. No result exists yet.",
+    description: "We are still checking this one. The result will appear shortly.",
     tone: "neutral",
   },
   completed: {
     label: "Completed",
-    description: "The engine produced a result for this assessment.",
+    description: "The check is finished and has a result.",
     tone: "ok",
   },
   failed: {
     label: "Failed",
-    description: "No assessment was performed for this request.",
+    description: "Something went wrong and this payment was not checked. Nothing was scored.",
     tone: "warn",
   },
 }
 
 export const POLICY_STATUS_INFO: Record<string, string> = {
-  EXECUTED: "A tenant policy was applied to the risk score.",
-  NO_POLICY_CONFIGURED: "No active policy exists for this environment, so no recommendation was produced.",
-  POLICY_INVALID: "The configured policy was invalid and was not applied.",
-  NOT_EXECUTED: "Policy was not executed for this assessment.",
+  EXECUTED: "Your policy turned the risk score into a recommendation.",
+  NO_POLICY_CONFIGURED: "You have no policy turned on here, so there is no recommendation. Turn one on in Policies.",
+  POLICY_INVALID: "Your policy has a problem and could not be used. Check it in Policies.",
+  NOT_EXECUTED: "Your policy was not used for this check.",
 }
 
 /** Per-rule outcomes the Decision Trace can label. Only TRIGGERED is observable in the public response today. */

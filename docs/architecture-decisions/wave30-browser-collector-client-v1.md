@@ -156,7 +156,7 @@ BLOCK/STEP_UP/REVIEW decision anywhere in this client (it computes none).
 
 ## 13. Frontend Integration
 
-fraud-web-app is Clarion's own tenant back-office dashboard, not a merchant checkout page — no existing
+fraud-web-app is FraudDetect's own tenant back-office dashboard, not a merchant checkout page — no existing
 checkout/demo flow existed to integrate against (confirmed, Phase 1: zero prior "collector" code
 anywhere in this repo). Per the instruction's own fallback, the smallest sandbox demonstration page was
 built: `src/pages/sandbox/collector-demo.tsx`, routed at `/sandbox/collector`, outside the authenticated

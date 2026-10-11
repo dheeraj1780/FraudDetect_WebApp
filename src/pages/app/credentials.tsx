@@ -57,7 +57,7 @@ export function Credentials() {
     try {
       await provisionLive.mutateAsync()
     } catch (err) {
-      setProvisionError(err instanceof ApiError ? err.message : "Failed to provision a live environment.")
+      setProvisionError(err instanceof ApiError ? err.message : "Could not set up LIVE.")
     }
   }
 
@@ -69,7 +69,7 @@ export function Credentials() {
       setRotateTarget(null)
       setRevealed(rotated)
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : "Failed to rotate credential.")
+      setActionError(err instanceof ApiError ? err.message : "Could not replace this key.")
     }
   }
 
@@ -80,14 +80,14 @@ export function Credentials() {
       await revokeCredential.mutateAsync(revokeTarget.id)
       setRevokeTarget(null)
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : "Failed to revoke credential.")
+      setActionError(err instanceof ApiError ? err.message : "Could not turn off this key.")
     }
   }
 
   const columns: Column<CredentialOut>[] = [
     {
       key: "credential",
-      header: "Credential",
+      header: "Key",
       cell: (credential) => (
         <div>
           <p className="font-medium text-fg">{credential.label ?? "Untitled"}</p>
@@ -101,7 +101,7 @@ export function Credentials() {
       header: "Status",
       cell: (c) => (
         <Badge variant={c.status === "active" ? "success" : "outline"}>
-          {c.status === "active" ? "Active" : c.revoked_reason === "live_access_suspended" ? "Revoked · LIVE suspended" : "Revoked"}
+          {c.status === "active" ? "Active" : c.revoked_reason === "live_access_suspended" ? "Turned off (LIVE paused)" : "Turned off"}
         </Badge>
       ),
     },
@@ -121,24 +121,24 @@ export function Credentials() {
               variant="ghost"
               size="sm"
               onClick={() => setRotateTarget(credential)}
-              aria-label={`Rotate credential ${credential.label ?? credential.key_prefix}`}
+              aria-label={`Replace key ${credential.label ?? credential.key_prefix}`}
             >
               <RefreshCw size={14} aria-hidden="true" />
-              Rotate
+              Replace
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className="text-danger hover:bg-danger/10 hover:text-danger"
               onClick={() => setRevokeTarget(credential)}
-              aria-label={`Revoke credential ${credential.label ?? credential.key_prefix}`}
+              aria-label={`Turn off key ${credential.label ?? credential.key_prefix}`}
             >
               <XCircle size={14} aria-hidden="true" />
-              Revoke
+              Turn off
             </Button>
           </div>
         ) : (
-          <span className="text-xs text-fg-subtle">—</span>
+          <span className="text-xs text-fg-subtle">No action</span>
         ),
     })
   }
@@ -147,7 +147,7 @@ export function Credentials() {
     <div className="mx-auto max-w-6xl">
       <PageHeader
         title="API credentials"
-        description="Server-side API credentials for integrating with the Fraud Detect API."
+        description="API keys let your server send payments to us for checking. Keep them secret and use them only on your server."
         action={
           canManage ? (
             <Button onClick={() => setCreateOpen(true)}>
@@ -160,13 +160,12 @@ export function Credentials() {
 
       {!canManage && myRole ? (
         <Alert variant="info" className="mb-4">
-          Only owners and admins can create, rotate, or revoke credentials. You can view
-          existing credentials below.
+          Only owners and admins can create, replace or turn off keys. You can see the existing keys below.
         </Alert>
       ) : null}
 
       <Card className="mb-4">
-        <CardTitle>Environments</CardTitle>
+        <CardTitle>SANDBOX and LIVE</CardTitle>
         {environmentsQuery.isPending ? (
           <LoadingState label="Loading environments…" />
         ) : environmentsQuery.isError ? (
@@ -174,22 +173,21 @@ export function Credentials() {
         ) : hasLiveEnvironment ? (
           <>
             <CardDescription className="mt-1">
-              Sandbox and live environments are both provisioned for this organization.
+              Both SANDBOX (for testing) and LIVE (for real customers) are set up.
             </CardDescription>
             <Alert variant="info" className="mt-3">
-              Live environment is provisioned. LIVE credentials are issued from the{" "}
+              Keys you create on this page are SANDBOX keys. LIVE keys are created on the{" "}
               <Link to="/app/live-access" className="underline-offset-2 hover:underline">
                 LIVE access
               </Link>{" "}
-              page once Clarion has approved LIVE access and a LIVE policy is active. “Create credential” below issues
-              SANDBOX credentials.
+              page, after FraudDetect approves you and you turn on a LIVE policy.
             </Alert>
           </>
         ) : (
           <>
             <CardDescription className="mt-1">
-              Only sandbox is provisioned. Provisioning the LIVE environment is the first step towards production: it
-              lets you author and activate a LIVE policy and request LIVE access.
+              You have SANDBOX, which is for testing. When you are ready for real customers, set up LIVE. That lets you
+              prepare a LIVE policy and ask for LIVE access. Nothing goes live yet.
             </CardDescription>
             {isOwner ? (
               <>
@@ -201,7 +199,7 @@ export function Credentials() {
                   disabled={provisionLive.isPending}
                 >
                   <Rocket size={14} aria-hidden="true" />
-                  Provision live environment
+                  Set up LIVE
                 </Button>
                 {provisionError ? (
                   <Alert variant="error" className="mt-3">
@@ -211,7 +209,7 @@ export function Credentials() {
               </>
             ) : (
               <Alert variant="info" className="mt-3">
-                Only the organization owner can provision a live environment.
+                Only the organization owner can set up LIVE.
               </Alert>
             )}
           </>
@@ -225,8 +223,8 @@ export function Credentials() {
       ) : credentialsQuery.data.length === 0 ? (
         <EmptyState
           icon={KeyRound}
-          title="No credentials yet"
-          description="Create a sandbox credential to start integrating with the platform API."
+          title="No API keys yet"
+          description="Create a SANDBOX key to start sending test checks."
           action={
             canManage ? (
               <Button size="sm" onClick={() => setCreateOpen(true)} className="mt-1">
@@ -263,9 +261,9 @@ export function Credentials() {
             setActionError(null)
           }
         }}
-        title="Rotate this credential?"
-        description="The current secret will stop working immediately and a new one will be issued. Any integration using the old secret must be updated."
-        confirmLabel="Rotate credential"
+        title="Replace this key?"
+        description="The old key stops working right away and you get a new one. Put the new key on your server straight away."
+        confirmLabel="Replace key"
         onConfirm={() => void handleRotate()}
         pending={rotateCredential.isPending}
         error={actionError}
@@ -279,9 +277,9 @@ export function Credentials() {
             setActionError(null)
           }
         }}
-        title="Revoke this credential?"
-        description="This permanently disables the credential. Any integration using it will stop working immediately. This cannot be undone."
-        confirmLabel="Revoke credential"
+        title="Turn off this key?"
+        description="The key stops working right away and for good. Anything using it will stop working. This cannot be undone."
+        confirmLabel="Turn off key"
         onConfirm={() => void handleRevoke()}
         pending={revokeCredential.isPending}
         destructive

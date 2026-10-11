@@ -25,7 +25,7 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
         >
           <div className="flex items-center justify-between px-2 py-2">
             <DialogPrimitive.Title asChild>
-              <Link to="/app/overview" onClick={() => onOpenChange(false)} aria-label="Fraud Detect by BrandSecOps, dashboard">
+              <Link to="/app/overview" onClick={() => onOpenChange(false)} aria-label="FraudDetect by BrandSecOps, dashboard">
                 <Logo />
               </Link>
             </DialogPrimitive.Title>

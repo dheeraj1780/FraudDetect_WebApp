@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest"
 import { renderApp } from "@/test/render"
 import { server } from "@/test/server"
 
-const TEST_TOKEN = "CLARION-COLLECTOR-TOKEN-V1.cGFnZS10ZXN0.feedface"
+const TEST_TOKEN = "FRAUDDETECT-COLLECTOR-TOKEN-V1.cGFnZS10ZXN0.feedface"
 
 function futureIso(): string {
   return new Date(Date.now() + 5 * 60_000).toISOString()

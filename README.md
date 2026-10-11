@@ -1,11 +1,11 @@
 # fraud-web-app
 
-The customer-facing web app for **Fraud Detect**, a BrandSecOps security product: real-time fraud
+The customer-facing web app for **FraudDetect**, a BrandSecOps security product: real-time fraud
 detection for payments, accounts and digital transactions. It contains the public landing page,
-sign-in / sign-up / onboarding, and the authenticated Fraud Detect console, and it talks to the
+sign-in / sign-up / onboarding, and the authenticated FraudDetect console, and it talks to the
 sibling `fraud-platform-api` backend.
 
-Fraud Detect V1 is deterministic and configurable (rules + policy). It does not use machine
+FraudDetect V1 is deterministic and configurable (rules + policy). It does not use machine
 learning, and the UI must never claim otherwise.
 
 See [`docs/design-system.md`](docs/design-system.md) for tokens, components and copy rules, and
