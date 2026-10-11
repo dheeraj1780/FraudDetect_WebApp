@@ -15,6 +15,9 @@ export default defineConfig({
   testMatch: "**/*.spec.ts",
   timeout: 60_000,
   fullyParallel: false, // the spec file owns backend/frontend process lifecycle itself; avoid races
+  // Wave 46: one worker -- spec files spawn their own servers and one of them rebuilds dist/, which
+  // must never happen while another file's preview server is serving it.
+  workers: 1,
   reporter: "list",
   use: {
     trace: "retain-on-failure",
