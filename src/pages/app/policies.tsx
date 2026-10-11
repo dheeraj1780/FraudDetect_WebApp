@@ -1,12 +1,11 @@
-import { ArrowRight, CheckCircle2, CircleDashed, FileX2, Plus, Repeat, Rocket, ShieldOff } from "lucide-react"
-import { Fragment, useState } from "react"
+import { CheckCircle2, CircleDashed, FileX2, Plus, Repeat, Rocket, ShieldOff } from "lucide-react"
+import { useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { PageHeader } from "@/components/app/page-header"
 import { PolicyDraftDialog } from "@/components/app/policy-draft-dialog"
 import { PolicyEnvironmentCompare } from "@/components/app/policy-environment-compare"
 import { RecommendationBadge } from "@/components/fd/risk-badge"
 import { Alert } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardTitle } from "@/components/ui/card"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -26,21 +25,12 @@ import { useMembers } from "@/hooks/use-members"
 import { useAuth } from "@/lib/auth/context"
 import { ApiError } from "@/lib/api/errors"
 import type { EnvironmentName, PolicyLifecycleStatus, PolicyVersionOut } from "@/lib/api/types"
-import { POLICY_STATUS_INFO } from "@/lib/fraud/vocabulary"
 import { cn } from "@/lib/utils"
-
-const FLOW: { name: string; body: string; exposed: boolean }[] = [
-  { name: "Risk", body: "A risk score and band from the rules.", exposed: true },
-  { name: "Confidence", body: "How much evidence backs the score.", exposed: false },
-  { name: "Telemetry", body: "The quality of the data supplied.", exposed: false },
-  { name: "Policy", body: "Your tenant's configured policy.", exposed: true },
-  { name: "Recommendation", body: "Proceed, step-up, review or block.", exposed: true },
-]
 
 const STATUS_STYLE: Record<PolicyLifecycleStatus, { label: string; icon: typeof CheckCircle2; classes: string }> = {
   draft: { label: "Draft", icon: CircleDashed, classes: "border-line-strong bg-panel-raised text-fg-muted" },
-  active: { label: "Active", icon: CheckCircle2, classes: "border-ok/30 bg-ok/10 text-ok" },
-  retired: { label: "Retired", icon: ShieldOff, classes: "border-line-strong bg-panel-raised text-fg-subtle" },
+  active: { label: "In use", icon: CheckCircle2, classes: "border-ok/30 bg-ok/10 text-ok" },
+  retired: { label: "Turned off", icon: ShieldOff, classes: "border-line-strong bg-panel-raised text-fg-subtle" },
 }
 
 function PolicyStatusBadge({ status }: { status: PolicyLifecycleStatus }) {
@@ -55,7 +45,7 @@ function PolicyStatusBadge({ status }: { status: PolicyLifecycleStatus }) {
 }
 
 function formatDateTime(iso: string | null) {
-  if (!iso) return "—"
+  if (!iso) return "Not yet"
   return new Date(iso).toLocaleString(undefined, {
     year: "numeric",
     month: "short",
@@ -143,7 +133,7 @@ export function Policies() {
     try {
       await provisionLive.mutateAsync()
     } catch (err) {
-      setProvisionError(err instanceof ApiError ? err.message : "Failed to provision a live environment.")
+      setProvisionError(err instanceof ApiError ? err.message : "Could not set up LIVE.")
     }
   }
 
@@ -161,7 +151,7 @@ export function Policies() {
       await activateVersion.mutateAsync({ versionId: activateTarget.id, body: { environment } })
       setActivateTarget(null)
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : "Failed to activate this policy version.")
+      setActionError(err instanceof ApiError ? err.message : "Could not turn on this version.")
     }
   }
 
@@ -172,7 +162,7 @@ export function Policies() {
       await reactivateVersion.mutateAsync({ versionId: reactivateTarget.id, body: { environment } })
       setReactivateTarget(null)
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : "Failed to reactivate this policy version.")
+      setActionError(err instanceof ApiError ? err.message : "Could not switch back to this version.")
     }
   }
 
@@ -183,7 +173,7 @@ export function Policies() {
       await retireVersion.mutateAsync({ versionId: retireTarget.id, body: { environment } })
       setRetireTarget(null)
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : "Failed to retire this policy version.")
+      setActionError(err instanceof ApiError ? err.message : "Could not turn off this policy.")
     }
   }
 
@@ -191,7 +181,7 @@ export function Policies() {
     { key: "version", header: "Version", cell: (v) => <span className="font-mono text-fg">v{v.version}</span> },
     { key: "status", header: "Status", cell: (v) => <PolicyStatusBadge status={v.status} /> },
     { key: "created", header: "Created", secondary: true, cell: (v) => <span className="text-fg-muted">{formatDateTime(v.created_at)}</span> },
-    { key: "published", header: "Activated", secondary: true, cell: (v) => <span className="text-fg-muted">{formatDateTime(v.published_at)}</span> },
+    { key: "published", header: "Turned on", secondary: true, cell: (v) => <span className="text-fg-muted">{formatDateTime(v.published_at)}</span> },
     {
       key: "actions",
       header: "Actions",
@@ -199,16 +189,16 @@ export function Policies() {
       className: "md:text-right",
       cell: (v) =>
         canPublish && v.status === "draft" ? (
-          <Button variant="ghost" size="sm" onClick={() => setActivateTarget(v)} aria-label={`Activate version ${v.version}`}>
-            Activate
+          <Button variant="ghost" size="sm" onClick={() => setActivateTarget(v)} aria-label={`Turn on version ${v.version}`}>
+            Turn on
           </Button>
         ) : canPublish && v.status === "retired" ? (
-          <Button variant="ghost" size="sm" onClick={() => setReactivateTarget(v)} aria-label={`Reactivate version ${v.version}`}>
+          <Button variant="ghost" size="sm" onClick={() => setReactivateTarget(v)} aria-label={`Use version ${v.version} again`}>
             <Repeat size={13} aria-hidden="true" />
-            Reactivate
+            Use again
           </Button>
         ) : (
-          <span className="text-xs text-fg-subtle">—</span>
+          <span className="text-xs text-fg-subtle">No action</span>
         ),
     },
   ]
@@ -217,7 +207,7 @@ export function Policies() {
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <PageHeader
         title="Policies"
-        description="Policy turns a risk assessment into a recommended action."
+        description="A policy decides what to do for each risk score: proceed, ask the customer to verify, review it, or block it."
         action={
           canCreate && environmentReady ? (
             <Button onClick={() => setDraftDialogFor("new")}>
@@ -249,108 +239,9 @@ export function Policies() {
         ))}
       </div>
 
-      <div className="rounded-panel border border-accent/30 bg-accent-soft/60 px-5 py-4">
-        <p className="text-sm font-semibold text-fg">Risk score is not the final customer action.</p>
-        <p className="mt-1 text-[13px] text-fg-muted">
-          The score describes how risky an assessment looks. The policy layer owns the recommendation — and your
-          application decides what to do with it.
-        </p>
-      </div>
-
-      <section aria-labelledby="flow-heading">
-        <h2 id="flow-heading" className="sr-only">
-          From risk to recommendation
-        </h2>
-        <ol className="flex flex-col gap-2 lg:flex-row lg:items-stretch">
-          {FLOW.map((step, index) => (
-            <Fragment key={step.name}>
-              <li className="flex flex-1 flex-col gap-1.5 rounded-panel border border-line bg-panel p-4">
-                <div className="flex flex-col items-start gap-1.5">
-                  <span className="text-[13px] font-semibold uppercase tracking-wider text-fg">{step.name}</span>
-                  <Badge variant={step.exposed ? "accent" : "outline"}>{step.exposed ? "In API response" : "Not returned"}</Badge>
-                </div>
-                <p className="text-xs text-fg-muted">{step.body}</p>
-              </li>
-              {index < FLOW.length - 1 ? (
-                <li aria-hidden="true" className="flex items-center justify-center text-fg-subtle max-lg:rotate-90 max-lg:py-0.5">
-                  <ArrowRight size={16} />
-                </li>
-              ) : null}
-            </Fragment>
-          ))}
-        </ol>
-        <p className="mt-2 text-xs text-fg-subtle">
-          The policy layer is defined to receive the score, band, confidence and data quality. Confidence and telemetry
-          quality aren&apos;t included in the public API response in this release.
-        </p>
-      </section>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardTitle>How a policy maps a score</CardTitle>
-          <CardDescription className="mt-1">
-            A policy is an ordered list of score thresholds. The highest threshold whose minimum score is at or below the
-            assessment&apos;s score decides the recommendation.
-          </CardDescription>
-          <table className="mt-4 w-full text-left text-[13px]">
-            <caption className="sr-only">Structure of a policy (not your configured policy)</caption>
-            <thead>
-              <tr className="border-b border-line text-[11px] uppercase tracking-wider text-fg-subtle">
-                <th scope="col" className="py-2 pr-4 font-medium">
-                  Minimum score
-                </th>
-                <th scope="col" className="py-2 font-medium">
-                  Recommendation
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {[
-                ["0", "PROCEED"],
-                ["N₁", "STEP_UP"],
-                ["N₂", "REVIEW"],
-                ["N₃", "BLOCK"],
-              ].map(([min, rec]) => (
-                <tr key={rec}>
-                  <td className="py-2 pr-4 font-mono text-fg-muted">≥ {min}</td>
-                  <td className="py-2">
-                    <RecommendationBadge value={rec} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <ul className="mt-4 list-disc space-y-1 pl-4 text-xs text-fg-subtle">
-            <li>Thresholds are unique and strictly ascending, within the 0–100 score range.</li>
-            <li>The lowest threshold must be 0 or below, so every score maps to a recommendation.</li>
-            <li>N₁ &lt; N₂ &lt; N₃ are placeholders for your own values — this is the structure, not your policy.</li>
-          </ul>
-        </Card>
-
-        <Card>
-          <CardTitle>Policy status</CardTitle>
-          <CardDescription className="mt-1">
-            Every assessment reports whether a policy was applied. A missing recommendation is never “proceed”.
-          </CardDescription>
-          <dl className="mt-4 flex flex-col gap-3 text-[13px]">
-            {Object.entries(POLICY_STATUS_INFO).map(([status, meaning]) => (
-              <div key={status}>
-                <dt className="font-mono text-xs text-fg">{status}</dt>
-                <dd className="mt-0.5 text-fg-muted">{meaning}</dd>
-              </div>
-            ))}
-          </dl>
-        </Card>
-      </div>
-
-      <Alert variant="info" title="Policies are versioned">
-        Only a policy&apos;s ACTIVE version is used when assessing, and it is resolved from the API credential&apos;s tenant
-        and environment.
-      </Alert>
-
       {!canCreate && myRole ? (
         <Alert variant="info">
-          Only owners and admins can draft policy versions. Only owners can activate, retire or roll back a version.
+          Owners and admins can create policies. Only the owner can turn a policy on or off.
         </Alert>
       ) : null}
 
@@ -362,13 +253,13 @@ export function Policies() {
         {!environmentReady ? (
           <EmptyState
             icon={Rocket}
-            title="Live environment not provisioned yet"
-            description="Provision a live environment to author and activate a live policy ahead of go-live. LIVE traffic additionally requires approved LIVE access and LIVE credentials."
+            title="LIVE is not set up yet"
+            description="Set up LIVE to prepare a LIVE policy before you go live. You will also need approval on the LIVE access page."
             action={
               isOwner ? (
                 <Button size="sm" onClick={() => void handleProvisionLive()} disabled={provisionLive.isPending} className="mt-1">
                   <Rocket size={15} aria-hidden="true" />
-                  Provision live environment
+                  Set up LIVE
                 </Button>
               ) : undefined
             }
@@ -386,7 +277,7 @@ export function Policies() {
                   <PolicyStatusBadge status={activePolicyQuery.data.status} />
                 </div>
                 <CardDescription className="mt-1">
-                  Activated {formatDateTime(activePolicyQuery.data.published_at)} · applies to {environment} assessments now.
+                  Turned on {formatDateTime(activePolicyQuery.data.published_at)}. Every new {environment === "live" ? "LIVE" : "SANDBOX"} check uses it.
                 </CardDescription>
               </div>
               {canPublish ? (
@@ -397,7 +288,7 @@ export function Policies() {
                   onClick={() => activePolicyQuery.data && setRetireTarget(activePolicyQuery.data)}
                 >
                   <ShieldOff size={14} aria-hidden="true" />
-                  Retire
+                  Turn off
                 </Button>
               ) : null}
             </div>
@@ -406,13 +297,13 @@ export function Policies() {
         ) : (
           <EmptyState
             icon={FileX2}
-            title="No active policy"
-            description="Assessments in this environment report NO_POLICY_CONFIGURED until a policy version is activated."
+            title="No policy turned on"
+            description="Checks here get a risk score but no recommendation until you create a policy and turn it on."
             action={
               canCreate ? (
                 <Button size="sm" onClick={() => setDraftDialogFor(effectivePolicyId ? "continue" : "new")} className="mt-1">
                   <Plus size={15} aria-hidden="true" />
-                  {effectivePolicyId ? "Draft a version to activate" : "Create a policy"}
+                  {effectivePolicyId ? "Create a new version" : "Create a policy"}
                 </Button>
               ) : undefined
             }
@@ -427,12 +318,12 @@ export function Policies() {
         <section aria-labelledby="history-heading" className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
             <h2 id="history-heading" className="text-sm font-semibold text-fg">
-              Version history
+              All versions
             </h2>
             {canCreate ? (
               <Button variant="secondary" size="sm" onClick={() => setDraftDialogFor("continue")}>
                 <Plus size={14} aria-hidden="true" />
-                New draft version
+                New version
               </Button>
             ) : null}
           </div>
@@ -447,6 +338,8 @@ export function Policies() {
         </section>
       ) : null}
 
+      <HowPoliciesWork />
+
       <PolicyDraftDialog
         open={draftDialogFor !== null}
         onOpenChange={(open) => !open && setDraftDialogFor(null)}
@@ -458,9 +351,9 @@ export function Policies() {
       <ConfirmDialog
         open={Boolean(activateTarget)}
         onOpenChange={(open) => !open && resetActionState()}
-        title="Activate this policy version?"
-        description={`Version ${activateTarget?.version ?? ""} becomes the ACTIVE policy for ${environment} assessments immediately, retiring whichever version is active now.`}
-        confirmLabel="Activate version"
+        title="Turn on this version?"
+        description={`Version ${activateTarget?.version ?? ""} will be used for every new ${environment === "live" ? "LIVE" : "SANDBOX"} check right away. The version in use now will be turned off.`}
+        confirmLabel="Turn on"
         onConfirm={() => void handleActivate()}
         pending={activateVersion.isPending}
         error={actionError}
@@ -469,9 +362,9 @@ export function Policies() {
       <ConfirmDialog
         open={Boolean(reactivateTarget)}
         onOpenChange={(open) => !open && resetActionState()}
-        title="Reactivate this policy version?"
-        description={`Version ${reactivateTarget?.version ?? ""} becomes ACTIVE again (a rollback), retiring whichever version is active now.`}
-        confirmLabel="Reactivate version"
+        title="Go back to this version?"
+        description={`Version ${reactivateTarget?.version ?? ""} will be used again right away. The version in use now will be turned off.`}
+        confirmLabel="Use this version"
         onConfirm={() => void handleReactivate()}
         pending={reactivateVersion.isPending}
         error={actionError}
@@ -480,14 +373,70 @@ export function Policies() {
       <ConfirmDialog
         open={Boolean(retireTarget)}
         onOpenChange={(open) => !open && resetActionState()}
-        title="Retire this policy version?"
-        description={`${environment === "live" ? "Live" : "Sandbox"} assessments will report NO_POLICY_CONFIGURED until another version is activated. You can reactivate this version later.`}
-        confirmLabel="Retire version"
+        title="Turn off this policy?"
+        description={`New ${environment === "live" ? "LIVE" : "SANDBOX"} checks will get no recommendation until you turn a policy on again. You can turn this version back on later.`}
+        confirmLabel="Turn off"
         onConfirm={() => void handleRetire()}
         pending={retireVersion.isPending}
         destructive
         error={actionError}
       />
     </div>
+  )
+}
+
+const EXAMPLE_POLICY: [number, string, string][] = [
+  [0, "PROCEED", "0 to 39"],
+  [40, "STEP_UP", "40 to 69"],
+  [70, "REVIEW", "70 to 89"],
+  [90, "BLOCK", "90 and above"],
+]
+
+function HowPoliciesWork() {
+  return (
+    <Card>
+      <CardTitle>How a policy works</CardTitle>
+      <CardDescription className="mt-1">
+        Every check gets a risk score from 0 to 100. Your policy is a short list that says what to do from each score
+        upward. Here is an example:
+      </CardDescription>
+      <table className="mt-4 w-full max-w-md text-left text-[13px]">
+        <caption className="sr-only">Example policy (not your policy)</caption>
+        <thead>
+          <tr className="border-b border-line text-[11px] uppercase tracking-wider text-fg-subtle">
+            <th scope="col" className="py-2 pr-4 font-medium">
+              From score
+            </th>
+            <th scope="col" className="py-2 pr-4 font-medium">
+              Recommendation
+            </th>
+            <th scope="col" className="py-2 font-medium">
+              Covers
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-line">
+          {EXAMPLE_POLICY.map(([min, rec, covers]) => (
+            <tr key={rec}>
+              <td className="py-2 pr-4 font-mono text-fg">{min}</td>
+              <td className="py-2 pr-4">
+                <RecommendationBadge value={rec} />
+              </td>
+              <td className="py-2 text-fg-muted">{covers}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <ul className="mt-4 list-disc space-y-1 pl-4 text-[13px] text-fg-muted">
+        <li>The first row must start at 0, so every score gets an answer.</li>
+        <li>Each row must have a higher score than the row above it.</li>
+        <li>Scores go up to 100.</li>
+        <li>
+          The score shows how risky a payment looks. The recommendation is advice; your own system decides what to do
+          with it.
+        </li>
+        <li>If no policy is turned on, checks get a score but no recommendation. That never means “proceed”.</li>
+      </ul>
+    </Card>
   )
 }

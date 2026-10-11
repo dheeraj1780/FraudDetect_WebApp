@@ -31,7 +31,7 @@ export function Onboarding() {
     event.preventDefault()
     setError(null)
     if (!name.trim()) {
-      setError("Organization name is required.")
+      setError("Please enter your organization's name.")
       return
     }
     setSubmitting(true)
@@ -57,8 +57,8 @@ export function Onboarding() {
           </div>
           <h1 className="mt-4 text-xl font-semibold tracking-tight text-fg">Create your organization</h1>
           <p className="mt-1.5 text-[13px] text-fg-muted">
-            Your account isn't attached to an organization yet. Create one to continue —
-            you'll be its owner.
+            Your account isn't attached to an organization yet. Create one to continue.
+            You'll be its owner.
           </p>
 
           <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-col gap-4">

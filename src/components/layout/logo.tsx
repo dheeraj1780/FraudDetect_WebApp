@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils"
 
 /**
- * Original Fraud Detect mark: a shield (protection) carrying a signal trace (detection).
+ * Original FraudDetect mark: a shield (protection) carrying a signal trace (detection).
  * Drawn for this product; not derived from BrandSecOps or any third-party asset.
  */
 export function FraudDetectMark({ size = 28, className }: { size?: number; className?: string }) {
@@ -39,7 +39,7 @@ interface LogoProps {
 }
 
 /**
- * BrandSecOps (parent platform) → Fraud Detect (this product). The parent is a quiet,
+ * BrandSecOps (parent platform) → FraudDetect (this product). The parent is a quiet,
  * tracked-out wordmark; the product name carries the weight, so it reads as a sibling
  * product inside the ecosystem rather than an unrelated brand.
  */
@@ -51,7 +51,7 @@ export function Logo({ className, showParent = true }: LogoProps) {
         {showParent ? (
           <span className="mb-1 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-fg-subtle">BrandSecOps</span>
         ) : null}
-        <span className="text-[15px] font-semibold tracking-tight text-fg">Fraud Detect</span>
+        <span className="text-[15px] font-semibold tracking-tight text-fg">FraudDetect</span>
       </span>
     </span>
   )

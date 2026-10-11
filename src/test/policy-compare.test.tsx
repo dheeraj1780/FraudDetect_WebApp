@@ -76,13 +76,13 @@ describe("Compare environments", () => {
     )
     const user = userEvent.setup()
     renderApp("/app/policies?compare=1", { signedIn: true })
-    expect(await screen.findByText(/LIVE has no active policy/)).toBeInTheDocument()
+    expect(await screen.findByText(/LIVE has no policy turned on yet/)).toBeInTheDocument()
     const table = screen.getByRole("table", { name: "Threshold differences" })
     expect(within(table).getAllByText("Only in SANDBOX")).toHaveLength(2)
 
     await user.click(screen.getByRole("button", { name: /Copy SANDBOX policy to a LIVE draft/ }))
     await user.click(await screen.findByRole("button", { name: "Create LIVE draft" }))
-    expect(await screen.findByText(/The SANDBOX policy is unchanged and the draft is not active/)).toBeInTheDocument()
+    expect(await screen.findByText(/SANDBOX is unchanged/)).toBeInTheDocument()
     await waitFor(() =>
       expect(copyBody).toMatchObject({ source_environment: "sandbox", source_version_id: "sandbox-v1", target_environment: "live" }),
     )

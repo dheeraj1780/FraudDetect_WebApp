@@ -436,7 +436,7 @@ export function OperatorTenantDetail() {
           {d.notices.map((n) => (
             <li key={n.id} className="text-fg-muted">
               {when(n.created_at)} · {n.channel} · {n.subject} · {n.delivery_status.replaceAll("_", " ")}
-              {n.last_error ? ` — ${n.last_error}` : ""}
+              {n.last_error ? `: ${n.last_error}` : ""}
             </li>
           ))}
         </ul>

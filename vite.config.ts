@@ -19,7 +19,7 @@ export default defineConfig({
       // Wave 46: overridable so the Playwright end-to-end suite can point a `vite preview` at the real
       // backend it spawns (the session cookie only works same-origin, i.e. through this proxy).
       '/api': {
-        target: process.env.CLARION_API_PROXY_TARGET ?? 'http://localhost:8000',
+        target: process.env.FRAUDDETECT_API_PROXY_TARGET ?? 'http://localhost:8000',
         changeOrigin: true,
       },
     },

@@ -44,7 +44,7 @@ describe("audit log pagination", () => {
     )
     renderApp("/app/audit-logs?action=live_access_request.approved", { signedIn: true })
     expect(await screen.findByText("live_access_request.approved")).toBeInTheDocument()
-    expect(screen.getByText("Clarion operator")).toBeInTheDocument()
+    expect(screen.getByText("FraudDetect team")).toBeInTheDocument()
     await waitFor(() => expect(seen).toContain("live_access_request.approved"))
   })
 })

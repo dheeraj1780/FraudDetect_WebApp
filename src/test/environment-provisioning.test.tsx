@@ -10,8 +10,8 @@ describe("credentials page: live environment provisioning (Wave 40)", () => {
   it("an owner sees a provisioning CTA when only sandbox is provisioned", async () => {
     server.use(http.get(`${API}/tenants/current/environments`, () => HttpResponse.json(fx.sandboxOnlyEnvironments)))
     renderApp("/app/credentials", { signedIn: true })
-    expect(await screen.findByText("Only sandbox is provisioned.", { exact: false })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Provision live environment" })).toBeInTheDocument()
+    expect(await screen.findByText("You have SANDBOX, which is for testing.", { exact: false })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Set up LIVE" })).toBeInTheDocument()
   })
 
   it("provisioning live updates the card to reflect the new environment, with no fake data", async () => {
@@ -27,11 +27,11 @@ describe("credentials page: live environment provisioning (Wave 40)", () => {
     )
     const user = userEvent.setup()
     renderApp("/app/credentials", { signedIn: true })
-    await user.click(await screen.findByRole("button", { name: "Provision live environment" }))
+    await user.click(await screen.findByRole("button", { name: "Set up LIVE" }))
 
-    expect(await screen.findByText(/Live environment is provisioned/)).toBeInTheDocument()
-    expect(screen.getByText(/LIVE credentials are issued from the/)).toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Provision live environment" })).not.toBeInTheDocument()
+    expect(await screen.findByText(/Keys you create on this page are SANDBOX keys/)).toBeInTheDocument()
+    expect(screen.getByText(/LIVE keys are created on the/)).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Set up LIVE" })).not.toBeInTheDocument()
   })
 
   it("a failed provisioning attempt shows the server's error message", async () => {
@@ -43,7 +43,7 @@ describe("credentials page: live environment provisioning (Wave 40)", () => {
     )
     const user = userEvent.setup()
     renderApp("/app/credentials", { signedIn: true })
-    await user.click(await screen.findByRole("button", { name: "Provision live environment" }))
+    await user.click(await screen.findByRole("button", { name: "Set up LIVE" }))
     expect(await screen.findByText("A live environment already exists for this tenant.")).toBeInTheDocument()
   })
 
@@ -53,15 +53,15 @@ describe("credentials page: live environment provisioning (Wave 40)", () => {
       http.get(`${API}/tenants/current/environments`, () => HttpResponse.json(fx.sandboxOnlyEnvironments)),
     )
     renderApp("/app/credentials", { signedIn: true })
-    expect(await screen.findByText("Only the organization owner can provision a live environment.")).toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Provision live environment" })).not.toBeInTheDocument()
+    expect(await screen.findByText("Only the organization owner can set up LIVE.")).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Set up LIVE" })).not.toBeInTheDocument()
   })
 
   it("already-provisioned live shows status with no button, for the owner too", async () => {
     server.use(http.get(`${API}/tenants/current/environments`, () => HttpResponse.json(fx.sandboxAndLiveEnvironments)))
     renderApp("/app/credentials", { signedIn: true })
-    expect(await screen.findByText(/Live environment is provisioned/)).toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Provision live environment" })).not.toBeInTheDocument()
+    expect(await screen.findByText(/Keys you create on this page are SANDBOX keys/)).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Set up LIVE" })).not.toBeInTheDocument()
   })
 })
 
@@ -84,8 +84,8 @@ describe("policies page: real environment selection (Wave 40)", () => {
     await screen.findByText("Version 2")
 
     await user.click(screen.getByRole("button", { name: "live" }))
-    expect(await screen.findByText("Live environment not provisioned yet")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Provision live environment" })).toBeInTheDocument()
+    expect(await screen.findByText("LIVE is not set up yet")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Set up LIVE" })).toBeInTheDocument()
     expect(screen.queryByText("Version 2")).not.toBeInTheDocument()
   })
 
@@ -98,8 +98,8 @@ describe("policies page: real environment selection (Wave 40)", () => {
     renderApp("/app/policies", { signedIn: true })
     await screen.findByRole("button", { name: "live" })
     await user.click(screen.getByRole("button", { name: "live" }))
-    expect(await screen.findByText("Live environment not provisioned yet")).toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Provision live environment" })).not.toBeInTheDocument()
+    expect(await screen.findByText("LIVE is not set up yet")).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Set up LIVE" })).not.toBeInTheDocument()
   })
 
   it("once live is provisioned, the real live policy UI renders, parameterized correctly", async () => {
@@ -116,7 +116,7 @@ describe("policies page: real environment selection (Wave 40)", () => {
 
     await user.click(screen.getByRole("button", { name: "live" }))
     await waitFor(() => expect(screen.getByRole("button", { name: "live" })).toHaveAttribute("aria-pressed", "true"))
-    expect(await screen.findByText("No active policy")).toBeInTheDocument()
+    expect(await screen.findByText("No policy turned on")).toBeInTheDocument()
     const heading = screen.getByRole("heading", { name: "Your live policy" })
     expect(heading).toBeInTheDocument()
   })

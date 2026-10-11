@@ -9,7 +9,7 @@ import { SITE_NAV } from "@/data/landing"
 
 /**
  * Two tiers, so the relationship reads at a glance: a thin BrandSecOps strip
- * (BrandSecOps › Security Products › Fraud Detect) above the Fraud Detect product bar.
+ * (BrandSecOps › Security Products › FraudDetect) above the FraudDetect product bar.
  * "Security Products" is a label only — no other products are implied or linked.
  */
 export function Navbar() {
@@ -24,13 +24,13 @@ export function Navbar() {
           <span>Security Products</span>
           <ChevronRight size={11} aria-hidden="true" />
           <span className="font-medium text-fg-muted" aria-current="page">
-            Fraud Detect
+            FraudDetect
           </span>
         </Container>
       </div>
 
       <Container className="flex h-14 items-center justify-between gap-6">
-        <Link to="/" className="rounded-control" aria-label="Fraud Detect by BrandSecOps, home">
+        <Link to="/" className="rounded-control" aria-label="FraudDetect by BrandSecOps, home">
           <Logo />
         </Link>
 
@@ -82,7 +82,7 @@ export function Navbar() {
               </div>
 
               <p className="px-3 pb-2 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-fg-subtle">
-                BrandSecOps › Fraud Detect
+                BrandSecOps › FraudDetect
               </p>
               <nav aria-label="Mobile" className="flex flex-col gap-1">
                 {SITE_NAV.map((link) => (

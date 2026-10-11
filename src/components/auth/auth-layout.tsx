@@ -25,7 +25,7 @@ export function AuthLayout({ title, description, children, footer }: AuthLayoutP
     <div className="grid min-h-screen bg-canvas lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <aside className="relative hidden flex-col justify-between overflow-hidden border-r border-line bg-sidebar p-12 lg:flex">
         <div aria-hidden="true" className="bg-grid pointer-events-none absolute inset-0" />
-        <Link to="/" aria-label="Fraud Detect by BrandSecOps, home" className="relative w-fit rounded-control">
+        <Link to="/" aria-label="FraudDetect by BrandSecOps, home" className="relative w-fit rounded-control">
           <Logo />
         </Link>
         <div className="relative max-w-md">
@@ -51,7 +51,7 @@ export function AuthLayout({ title, description, children, footer }: AuthLayoutP
 
       <div className="flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <Link to="/" className="mb-8 flex justify-center lg:hidden" aria-label="Fraud Detect by BrandSecOps, home">
+          <Link to="/" className="mb-8 flex justify-center lg:hidden" aria-label="FraudDetect by BrandSecOps, home">
             <Logo />
           </Link>
 

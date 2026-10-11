@@ -9,7 +9,7 @@
 import { API_BASE_URL } from "@/lib/api/config"
 import { ApiError, parseErrorBody } from "@/lib/api/errors"
 
-const TOKEN_KEY = "clarion.operator_session"
+const TOKEN_KEY = "frauddetect.operator_session"
 
 export function getOperatorToken(): string | null {
   try {

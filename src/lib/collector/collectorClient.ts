@@ -32,7 +32,7 @@ import type { ClientOnlyOutcome, CollectorSubmitResult, ServerCollectResponseBod
 const DEFAULT_MAX_HONORED_RETRY_AFTER_SECONDS = 10
 
 export interface CollectorClientOptions {
-  /** The origin fraud-platform-api's collector surface is reachable at (e.g. "https://api.clarion.example"),
+  /** The origin fraud-platform-api's collector surface is reachable at (e.g. "https://api.frauddetect.example"),
    * or "" (default) for a same-origin request. This module never reads `API_BASE_URL`
    * (`@/lib/api/config.ts`) -- that constant is this dashboard's own `/api/v1` path, a different mount
    * on a (usually) different logical boundary than `/collector`. */

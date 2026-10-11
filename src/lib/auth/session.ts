@@ -2,22 +2,22 @@
  * The single place that touches browser storage for auth state.
  *
  * Wave 46: the tenant session is an HttpOnly, Secure, SameSite=Strict cookie set by the API at
- * sign-in (`X-Clarion-Client: web`). Page JavaScript can neither read nor store the session token,
+ * sign-in (`X-FraudDetect-Client: web`). Page JavaScript can neither read nor store the session token,
  * so an XSS bug can no longer exfiltrate it from localStorage. What remains here is NOT a credential:
  *
  *   - a "signed in" hint, so public pages don't probe /auth/me on every load (the API's answer is
  *     always authoritative -- a stale hint just leads to one 401 and a clean sign-out), and
  *   - the selected tenant id (an identifier, not a secret).
  *
- * The CSRF token lives in the API-set `clarion_csrf` cookie, read only to echo it back in the
+ * The CSRF token lives in the API-set `frauddetect_csrf` cookie, read only to echo it back in the
  * X-CSRF-Token header (double-submit); it authenticates nothing on its own.
  */
 
-const SIGNED_IN_KEY = "clarion.signed_in"
-const TENANT_KEY = "clarion.tenant_id"
+const SIGNED_IN_KEY = "frauddetect.signed_in"
+const TENANT_KEY = "frauddetect.tenant_id"
 /** Wave 45 and earlier stored the bearer token here; removed on first load. */
-const LEGACY_TOKEN_KEY = "clarion.session_token"
-const CSRF_COOKIE = "clarion_csrf"
+const LEGACY_TOKEN_KEY = "frauddetect.session_token"
+const CSRF_COOKIE = "frauddetect_csrf"
 
 function safe<T>(fn: () => T, fallback: T): T {
   try {

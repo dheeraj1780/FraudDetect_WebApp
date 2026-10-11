@@ -1,4 +1,4 @@
-# Wave 32A — Complete Clarion Web-App UI Inventory + Information Architecture Audit
+# Wave 32A — Complete FraudDetect Web-App UI Inventory + Information Architecture Audit
 
 Read-only reconciliation. No pages were built, no routes were added, no backend contract was changed.
 The only artifacts produced are this document and `docs/ui-inventory-v1.json`.

@@ -31,8 +31,8 @@ const DIFF_BADGE: Record<ThresholdDiff["kind"], { label: string; variant: "succe
 }
 
 function versionLine(v: PolicyVersionOut | null | undefined) {
-  if (!v) return "No active policy"
-  return `v${v.version} · ${v.status} · published ${v.published_at ? new Date(v.published_at).toLocaleDateString() : "—"}`
+  if (!v) return "no policy turned on"
+  return `version ${v.version}, turned on ${v.published_at ? new Date(v.published_at).toLocaleDateString() : "recently"}`
 }
 
 export function PolicyEnvironmentCompare({ canCreate }: { canCreate: boolean }) {
@@ -82,20 +82,20 @@ export function PolicyEnvironmentCompare({ canCreate }: { canCreate: boolean }) 
       ) : (
         <>
           <CardDescription className="mt-1">
-            Active versions as stored for each environment. SANDBOX: {versionLine(sandboxQuery.data)}. LIVE:{" "}
+            The policy in use in each place. SANDBOX: {versionLine(sandboxQuery.data)}. LIVE:{" "}
             {versionLine(liveQuery.data)}.
           </CardDescription>
           {!sandboxQuery.data && !liveQuery.data ? (
-            <Alert variant="info" className="mt-3">Neither environment has an active policy, so there is nothing to compare.</Alert>
+            <Alert variant="info" className="mt-3">Neither SANDBOX nor LIVE has a policy turned on, so there is nothing to compare.</Alert>
           ) : (
             <>
-              {!liveQuery.data ? <Alert variant="warning" className="mt-3">LIVE has no active policy — every SANDBOX threshold is missing in LIVE.</Alert> : null}
-              {!sandboxQuery.data ? <Alert variant="info" className="mt-3">SANDBOX has no active policy.</Alert> : null}
+              {!liveQuery.data ? <Alert variant="warning" className="mt-3">LIVE has no policy turned on yet. Copy your SANDBOX policy below to start one.</Alert> : null}
+              {!sandboxQuery.data ? <Alert variant="info" className="mt-3">SANDBOX has no policy turned on.</Alert> : null}
               <table className="mt-3 w-full text-left text-[13px]">
                 <caption className="sr-only">Threshold differences</caption>
                 <thead>
                   <tr className="border-b border-line text-[11px] uppercase tracking-wider text-fg-subtle">
-                    <th scope="col" className="py-2 pr-4 font-medium">Minimum score</th>
+                    <th scope="col" className="py-2 pr-4 font-medium">From score</th>
                     <th scope="col" className="py-2 pr-4 font-medium">SANDBOX</th>
                     <th scope="col" className="py-2 pr-4 font-medium">LIVE</th>
                     <th scope="col" className="py-2 font-medium">Difference</th>
@@ -104,9 +104,9 @@ export function PolicyEnvironmentCompare({ canCreate }: { canCreate: boolean }) 
                 <tbody className="divide-y divide-line">
                   {diffs.map((d) => (
                     <tr key={d.minimum_score}>
-                      <td className="py-2 pr-4 font-mono text-fg-muted">≥ {d.minimum_score}</td>
-                      <td className="py-2 pr-4 text-fg">{d.kind === "same" ? d.value : d.kind === "added" ? "—" : d.sandbox}</td>
-                      <td className="py-2 pr-4 text-fg">{d.kind === "same" ? d.value : d.kind === "removed" ? "—" : d.live}</td>
+                      <td className="py-2 pr-4 font-mono text-fg-muted">{d.minimum_score}</td>
+                      <td className="py-2 pr-4 text-fg">{d.kind === "same" ? d.value : d.kind === "added" ? "Not set" : d.sandbox}</td>
+                      <td className="py-2 pr-4 text-fg">{d.kind === "same" ? d.value : d.kind === "removed" ? "Not set" : d.live}</td>
                       <td className="py-2">
                         <Badge variant={DIFF_BADGE[d.kind].variant}>{DIFF_BADGE[d.kind].label}</Badge>
                       </td>
@@ -114,9 +114,6 @@ export function PolicyEnvironmentCompare({ canCreate }: { canCreate: boolean }) 
                   ))}
                 </tbody>
               </table>
-              <p className="mt-2 text-xs text-fg-subtle">
-                Policies contain thresholds only; there are no environment-specific references that could be incompatible.
-              </p>
             </>
           )}
           {canCreate && sandboxQuery.data ? (
@@ -129,9 +126,8 @@ export function PolicyEnvironmentCompare({ canCreate }: { canCreate: boolean }) 
           ) : null}
           {result ? (
             <Alert variant="success" className="mt-3" title="LIVE draft created">
-              Copied {result.summary.copied_threshold_count} threshold(s) from SANDBOX v{result.summary.source_version} into LIVE draft v
-              {result.draft.version}. The SANDBOX policy is unchanged and the draft is not active — review and activate it under
-              LIVE.
+              Copied {result.summary.copied_threshold_count} row(s) from SANDBOX version {result.summary.source_version} into a LIVE
+              draft (version {result.draft.version}). SANDBOX is unchanged. To use it, pick LIVE below and turn the draft on.
             </Alert>
           ) : null}
         </>
@@ -143,7 +139,7 @@ export function PolicyEnvironmentCompare({ canCreate }: { canCreate: boolean }) 
           if (!next) setError(null)
         }}
         title="Copy to a LIVE draft?"
-        description="Creates a new, independent LIVE draft with the active SANDBOX thresholds. Nothing is activated and SANDBOX is not modified."
+        description="This makes a LIVE draft with the same rows as your SANDBOX policy. Nothing is turned on and SANDBOX does not change."
         confirmLabel="Create LIVE draft"
         pending={copy.isPending}
         error={error}

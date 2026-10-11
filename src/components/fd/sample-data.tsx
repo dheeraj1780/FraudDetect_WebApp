@@ -37,7 +37,7 @@ export function SampleBadge({ className, compact = false }: { className?: string
   return (
     <Badge
       variant="warning"
-      title="Sample data — not your assessments"
+      title="Sample data, not your assessments"
       className={cn("whitespace-nowrap uppercase tracking-wider", compact && "px-1.5 py-px text-[10px]", className)}
     >
       <FlaskConical size={compact ? 10 : 11} aria-hidden="true" />
@@ -68,7 +68,7 @@ export function SampleDataBanner({ className, hideLink = true }: { className?: s
         <span>
           <strong className="font-semibold">Sample data.</strong>{" "}
           <span className="text-fg-muted">
-            These figures are illustrative and generated locally. They are not your assessments.
+            These are made-up figures so you can see what the page looks like. They are not your assessments.
           </span>
         </span>
       </p>

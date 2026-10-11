@@ -34,7 +34,7 @@ export function SampleAssessmentDetail() {
     <div className="mx-auto max-w-7xl">
       <PageHeader
         title="Assessment"
-        description="Why Fraud Detect assessed this transaction the way it did."
+        description="Why FraudDetect assessed this transaction the way it did."
         action={
           <Button asChild variant="secondary" size="sm">
             <Link to="/app/assessments">
@@ -98,7 +98,7 @@ export function RealAssessmentDetail() {
     <div className="mx-auto max-w-7xl">
       <PageHeader
         title="Assessment"
-        description="Why Fraud Detect assessed this transaction the way it did."
+        description="Why FraudDetect assessed this transaction the way it did."
         action={
           <Button asChild variant="secondary" size="sm">
             <Link to="/app/assessments">

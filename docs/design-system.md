@@ -1,7 +1,7 @@
-# Fraud Detect design system
+# FraudDetect design system
 
-Customer-facing product: **Fraud Detect**. Parent ecosystem: **BrandSecOps**.
-(Internal names — repository, package and API service names, and the `clarion.*` localStorage
+Customer-facing product: **FraudDetect**. Parent ecosystem: **BrandSecOps**.
+(Internal names — repository, package and API service names, and the `frauddetect.*` localStorage
 keys — are unchanged on purpose; see "Branding" below.)
 
 The visual language is a dark, security-console aesthetic in the BrandSecOps family
@@ -63,7 +63,7 @@ src/components/
             MetricCard, ChartCard/ChartPlaceholder, charts (RiskActivityChart, BarList)
   fd/       RiskBadge & friends, AssessmentCard, AssessmentDetail, DecisionTrace, RuleCard,
             SignalCard, SampleBadge / SampleDataBanner / SampleToggle, CodeBlock
-  layout/   Logo (BrandSecOps › Fraud Detect lockup), Navbar, Footer, SiteLayout, SectionHeading
+  layout/   Logo (BrandSecOps › FraudDetect lockup), Navbar, Footer, SiteLayout, SectionHeading
   landing/  Hero, Problem, HowItWorks, Features, ProductSection, Trust, FinalCta, previews
 ```
 
@@ -93,10 +93,10 @@ grid, an always-present legend, per-column hover/focus tooltip, and a “View as
 
 ## Branding
 
-- Customer-facing: **Fraud Detect** by **BrandSecOps** (`Logo`, `FraudDetectMark`).
-- The word “Clarion” does not appear in the UI. Internal identifiers are unchanged:
-  repositories, Python packages, API service names, and the `clarion.session_token` /
-  `clarion.tenant_id` localStorage keys (renaming those would silently sign users out).
+- Customer-facing: **FraudDetect** by **BrandSecOps** (`Logo`, `FraudDetectMark`).
+- The word “FraudDetect” does not appear in the UI. Internal identifiers are unchanged:
+  repositories, Python packages, API service names, and the `frauddetect.session_token` /
+  `frauddetect.tenant_id` localStorage keys (renaming those would silently sign users out).
 - Copy rules: no “AI-powered”, ML, “100%”, “zero false positives”, “guaranteed”, or “blocks
   every attack”. V1 is deterministic and configurable.
 

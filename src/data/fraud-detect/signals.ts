@@ -1,5 +1,5 @@
 /**
- * What Fraud Detect actually accepts and derives — taken from fraud-platform-api's request
+ * What FraudDetect actually accepts and derives — taken from fraud-platform-api's request
  * contract (`app/schemas/assessment.py`) and Context Provider (`DerivedContextOut`).
  * This describes INPUTS. It deliberately says nothing about which rules are live, calibrated
  * or firing for a tenant: that is not exposed by the API, so it is not shown.
@@ -27,7 +27,7 @@ export const SUPPLIED_SIGNALS: SignalDescriptor[] = [
     summary: "The payment being assessed.",
     fields: ["amount", "currency", "transaction type", "destination (beneficiary reference, country, currency, instrument type)"],
     families: ["F6", "F7"],
-    note: "The tenant's own transaction reference is kept for your correlation and is not forwarded to the engine.",
+    note: "Your own order or transaction number. We keep it so you can match results, but don't use it for scoring.",
   },
   {
     id: "customer",
@@ -36,7 +36,7 @@ export const SUPPLIED_SIGNALS: SignalDescriptor[] = [
     summary: "Who is transacting.",
     fields: ["customer reference", "account age (days)", "contact: phone, email, address"],
     families: ["F3", "F8"],
-    note: "Contact details are validated and stored only as keyed pseudonyms — never stored, logged or forwarded raw.",
+    note: "Email and phone are scrambled before we store them. We never keep the real values.",
   },
   {
     id: "payment-instrument",
@@ -45,7 +45,7 @@ export const SUPPLIED_SIGNALS: SignalDescriptor[] = [
     summary: "The instrument used, by token.",
     fields: ["instrument type", "instrument token", "instrument country"],
     families: ["F3", "F6"],
-    note: "Token only. Raw card numbers and CVV are rejected.",
+    note: "Send your payment provider's card token. Card numbers and CVV are rejected.",
   },
   {
     id: "authentication",
@@ -62,7 +62,7 @@ export const SUPPLIED_SIGNALS: SignalDescriptor[] = [
     summary: "The tenant's device identity for the request.",
     fields: ["device id", "device id source (fingerprint / cookie)"],
     families: ["F3", "F5"],
-    note: "A device is used as an identity only when a supported source is declared.",
+    note: "Only used if you tell us where the device ID came from.",
   },
   {
     id: "browser",
@@ -79,7 +79,7 @@ export const SUPPLIED_SIGNALS: SignalDescriptor[] = [
     summary: "The network the request arrived from.",
     fields: ["IP address"],
     families: ["F4"],
-    note: "IP addresses are kept only as keyed pseudonyms.",
+    note: "IP addresses are scrambled before we store them.",
   },
   {
     id: "geographic",
@@ -104,7 +104,7 @@ export const SUPPLIED_SIGNALS: SignalDescriptor[] = [
     summary: "Integrity indicators reported by the tenant's own SDK.",
     fields: ["emulator indicator", "root / jailbreak indicator", "headless-automation indicator"],
     families: ["F5"],
-    note: "Fraud Detect detects nothing on the device itself; it uses what the tenant reports.",
+    note: "We don't scan the device ourselves. We use what you tell us.",
   },
 ]
 
@@ -148,7 +148,7 @@ export const DERIVED_SIGNALS: SignalDescriptor[] = [
     summary: "Whether an instrument token or device is new for this customer.",
     fields: ["new instrument token", "new device"],
     families: ["F5", "F6"],
-    note: "Tri-state: “new” is reported only when its absence is established; otherwise history is insufficient.",
+    note: "We only say “new” when we're sure. If there isn't enough history, we say so.",
   },
   {
     id: "relationships",
@@ -157,7 +157,7 @@ export const DERIVED_SIGNALS: SignalDescriptor[] = [
     summary: "How widely a device, instrument or contact value has been seen across accounts.",
     fields: ["accounts per device", "identities per instrument", "accounts per phone / email / address"],
     families: ["F3"],
-    note: "Counts of distinct accounts, computed over pseudonyms — no raw identifiers.",
+    note: "How many different accounts share the same detail. Worked out from scrambled values only.",
   },
   {
     id: "account-changes",

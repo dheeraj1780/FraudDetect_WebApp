@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { describe, expect, it } from "vitest"
@@ -77,7 +77,7 @@ describe("MetricCard", () => {
     render(<MetricCard label="Block" state={{ kind: "value", value: 0, sample: true }} />)
     expect(screen.getByText("0")).toBeInTheDocument()
     expect(screen.getByText("Sample")).toBeInTheDocument()
-    expect(screen.getByTitle("Sample data — not your assessments")).toBeInTheDocument()
+    expect(screen.getByTitle("Sample data, not your assessments")).toBeInTheDocument()
   })
 
   it("announces loading with an accessible name", () => {
@@ -103,16 +103,17 @@ describe("DataTable", () => {
 })
 
 describe("DecisionTrace", () => {
-  it("shows all eight stages in order", () => {
+  it("shows the five stages in order", () => {
     render(<DecisionTrace assessment={assessment} />)
-    const titles = ["Input", "Normalization", "Signals", "Rules", "Score", "Confidence", "Policy", "Recommendation"]
+    const titles = ["Received", "Rules", "Score", "Policy", "Recommendation"]
     const headings = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent ?? "")
     titles.forEach((title, i) => expect(headings[i]).toContain(title))
   })
 
-  it("says plainly which stages the API does not return, and invents nothing for them", () => {
+  it("shows only stages the API returns, and invents nothing for them", () => {
     render(<DecisionTrace assessment={assessment} />)
-    expect(screen.getAllByText("Not returned")).toHaveLength(3) // normalization, signals, confidence
+    expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(5)
+    for (const hidden of ["Normalization", "Confidence"]) expect(screen.queryByText(hidden)).not.toBeInTheDocument()
     expect(screen.queryByText(/threshold:/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/contribution:/i)).not.toBeInTheDocument()
   })
@@ -128,12 +129,9 @@ describe("DecisionTrace", () => {
     expect(within(items[0]).getByText("Triggered")).toBeInTheDocument()
   })
 
-  it("distinguishes all four rule outcomes and states only triggered rules are reported", () => {
+  it("labels the rules stage in plain words", () => {
     render(<DecisionTrace assessment={assessment} />)
-    for (const label of ["Triggered", "Not triggered", "Insufficient data", "Shadow"]) {
-      expect(screen.getAllByText(label).length).toBeGreaterThan(0)
-    }
-    expect(screen.getByText(/reports triggered rules only/i)).toBeInTheDocument()
+    expect(screen.getByText("warning signs").previousElementSibling).toHaveTextContent("2")
   })
 
   it("stages are keyboard-operable disclosures that expand and collapse", async () => {
@@ -155,7 +153,7 @@ describe("DecisionTrace", () => {
         assessment={{ ...assessment, reasons: [], risk_score: 0, risk_band: "LOW", evaluation_state: "NOT_EVALUABLE" }}
       />,
     )
-    expect(screen.getByText(/not the same as “assessed and clean”/)).toBeInTheDocument()
+    expect(screen.getByText(/this does not mean the payment is safe/)).toBeInTheDocument()
   })
 
   it("never presents a missing recommendation as proceed", () => {
@@ -167,7 +165,7 @@ describe("DecisionTrace", () => {
         }}
       />,
     )
-    expect(screen.getByText(/never “proceed”/)).toBeInTheDocument()
+    expect(screen.getByText(/Don.t treat that as “proceed”/)).toBeInTheDocument()
     expect(screen.queryByText("Proceed")).not.toBeInTheDocument()
   })
 })
@@ -179,19 +177,17 @@ describe("AssessmentDetail", () => {
     expect(within(summary).getByText("HIGH")).toBeInTheDocument()
     expect(within(summary).getByText("78")).toBeInTheDocument()
     expect(within(summary).getByText("Manual review")).toBeInTheDocument()
-    expect(within(summary).getByText(/score is not the final action/i)).toBeInTheDocument()
+    expect(within(summary).getByText(/Your policy turns it into this recommendation/)).toBeInTheDocument()
   })
 
-  it("marks evidence, telemetry and confidence as not returned rather than filling them in", () => {
+  it("does not fill in evidence, telemetry or confidence the API doesn't return", () => {
     render(<AssessmentDetail assessment={assessment} />)
-    expect(screen.getByText(/Rule evidence isn.t returned/)).toBeInTheDocument()
-    expect(screen.getByText(/Telemetry quality isn.t returned/)).toBeInTheDocument()
-    expect(screen.getByText(/Confidence: not returned/)).toBeInTheDocument()
+    for (const absent of [/evidence/i, /telemetry/i, /confidence/i]) expect(screen.queryByText(absent)).not.toBeInTheDocument()
   })
 
   it("lists the reasons that flagged the assessment, with no invented severity per reason", () => {
     render(<AssessmentDetail assessment={assessment} />)
-    const flagged = screen.getByRole("heading", { name: "Why this assessment was flagged" }).closest("section")!
+    const flagged = screen.getByRole("heading", { name: "Why it got this score" }).closest("section")!
     expect(within(flagged).getAllByRole("listitem")).toHaveLength(2)
     expect(within(flagged).queryByText("MEDIUM")).not.toBeInTheDocument()
   })
@@ -205,29 +201,52 @@ describe("AssessmentDetail", () => {
 
   it("flags an idempotent replay", () => {
     render(<AssessmentDetail assessment={{ ...assessment, idempotent_replay: true }} />)
-    expect(screen.getByText("Idempotent replay")).toBeInTheDocument()
+    expect(screen.getByText("Repeat request")).toBeInTheDocument()
   })
 })
 
 describe("dashboard: no data vs failed vs sample", () => {
-  it("shows unavailable metrics — not zeros — and no sample label by default", async () => {
+  it("shows the tenant's real figures from the analytics API, with no sample label by default", async () => {
     renderApp("/app/overview", { signedIn: true })
     expect(await screen.findByRole("heading", { name: "Overview" })).toBeInTheDocument()
     const metrics = screen.getByRole("region", { name: "Key metrics" })
-    expect(within(metrics).getAllByText("Not available")).toHaveLength(5)
-    expect(within(metrics).queryByText("0")).not.toBeInTheDocument()
+    expect(await within(metrics).findByText("42")).toBeInTheDocument() // total checks
+    await waitFor(() => expect(within(metrics).getAllByText("8")).toHaveLength(2)) // high risk, manual review
+    expect(within(metrics).getByText("5")).toBeInTheDocument() // block
+    expect(within(metrics).queryByText("Not available")).not.toBeInTheDocument()
     expect(screen.queryByText(/^Sample data\./)).not.toBeInTheDocument()
-    expect(screen.getByText(/this overview doesn.t show live assessment figures yet/i)).toBeInTheDocument()
+    expect(screen.queryByText("Get started in three steps")).not.toBeInTheDocument()
   })
 
-  it("does not fabricate risk activity, recent assessments or rules without sample mode, and points to the real pages instead", async () => {
+  it("lists real recent checks and links to the full pages, never sample rows", async () => {
     renderApp("/app/overview", { signedIn: true })
     await screen.findByRole("heading", { name: "Overview" })
     expect(screen.queryByText(/sample-\d{4}/)).not.toBeInTheDocument()
-    expect(screen.getByText(/Risk activity isn.t shown on this overview yet/)).toBeInTheDocument()
-    expect(screen.queryByText(/Risk activity will appear here once assessment history is available/)).not.toBeInTheDocument()
-    expect(screen.getByRole("link", { name: /See real risk trends on Analytics/ })).toHaveAttribute("href", "/app/analytics")
-    expect(screen.getByRole("link", { name: /See your real history on Assessments/ })).toHaveAttribute("href", "/app/assessments")
+    const rows = await screen.findAllByRole("link", { name: "aaaaaaaa" })
+    expect(rows).toHaveLength(3)
+    expect(rows[0]).toHaveAttribute("href", "/app/assessments/aaaaaaaa-0000-4000-8000-000000000001")
+    expect(screen.getByRole("link", { name: "See all" })).toHaveAttribute("href", "/app/assessments")
+    expect(screen.getByRole("link", { name: "More in Analytics" })).toHaveAttribute("href", "/app/analytics")
+  })
+
+  it("shows a getting-started guide when the tenant has sent no checks yet", async () => {
+    server.use(
+      http.get(`${API}/analytics/assessments`, () => HttpResponse.json(fx.emptyAssessmentAnalytics)),
+      http.get(`${API}/assessments`, () => HttpResponse.json({ items: [], has_more: false })),
+    )
+    renderApp("/app/overview", { signedIn: true })
+    expect(await screen.findByText("Get started in three steps")).toBeInTheDocument()
+    const guide = screen.getByText("Get started in three steps").closest("div")!.parentElement!
+    expect(within(guide).getByRole("link", { name: "Credentials" })).toHaveAttribute("href", "/app/credentials")
+    expect(await screen.findByText(/No checks yet/)).toBeInTheDocument()
+  })
+
+  it("shows a failed figures load as a failure, never as zero", async () => {
+    server.use(http.get(`${API}/analytics/assessments`, () => HttpResponse.json({ code: "Boom", message: "x" }, { status: 500 })))
+    renderApp("/app/overview", { signedIn: true })
+    const metrics = await screen.findByRole("region", { name: "Key metrics" })
+    await waitFor(() => expect(within(metrics).getAllByText("Failed to load")).toHaveLength(5))
+    expect(within(metrics).queryByText("0")).not.toBeInTheDocument()
   })
 
   it("sample mode is opt-in, loudly labelled, and every panel is tagged", async () => {
@@ -256,13 +275,13 @@ describe("dashboard: no data vs failed vs sample", () => {
   it("keeps real workspace data (organization, credentials) alongside", async () => {
     renderApp("/app/overview", { signedIn: true })
     expect(await screen.findByText("Credentials issued")).toBeInTheDocument()
-    expect(screen.getByText("credential.created")).toBeInTheDocument()
+    expect(screen.getByText("API key created")).toBeInTheDocument()
   })
 
   it("the global environment badge scopes its claim to credential issuance, never the environment itself (Wave 42B)", async () => {
     renderApp("/app/overview", { signedIn: true })
     await screen.findByRole("heading", { name: "Overview" })
-    expect(screen.getByTitle(/LIVE credentials require approved LIVE access/)).toBeInTheDocument()
+    expect(screen.getByTitle(/To work with real customers, see the LIVE access page/)).toBeInTheDocument()
     expect(screen.queryByTitle(/Live environment isn.t available in this release/)).not.toBeInTheDocument()
   })
 
@@ -273,11 +292,10 @@ describe("dashboard: no data vs failed vs sample", () => {
     expect(screen.queryByText("Not available in this release")).not.toBeInTheDocument()
   })
 
-  it("states the real reason rule firing frequency isn't shown, not a false 'once assessments can be read' claim (Wave 42B)", async () => {
+  it("does not show a rule-frequency panel outside sample mode, since the API doesn't expose it", async () => {
     renderApp("/app/overview", { signedIn: true })
     await screen.findByRole("heading", { name: "Overview" })
-    expect(screen.getByText(/Rule firing frequency isn.t exposed by the platform API/)).toBeInTheDocument()
-    expect(screen.queryByText(/Rule firing frequency isn.t available until assessments can be read/)).not.toBeInTheDocument()
+    expect(screen.queryByText("Rules that fired most")).not.toBeInTheDocument()
   })
 
   it("shows a failed load as a failure, not as empty", async () => {
@@ -344,11 +362,11 @@ describe("decision trace page", () => {
     const box = await screen.findByLabelText("Response JSON")
     await user.click(box)
     await user.paste(valid)
-    await user.click(screen.getByRole("button", { name: "Inspect" }))
+    await user.click(screen.getByRole("button", { name: "Explain" }))
 
     expect(await screen.findByText("pasted-1")).toBeInTheDocument()
     expect(screen.getByText("Pasted response")).toBeInTheDocument()
-    expect(screen.getByText(/hasn.t verified that it came from your account/)).toBeInTheDocument()
+    expect(screen.getByText(/haven.t checked that it came from your account/)).toBeInTheDocument()
     const stored = Object.keys(localStorage).map((k) => localStorage.getItem(k) ?? "")
     expect(stored.some((v) => v.includes("pasted-1"))).toBe(false)
     expect(window.location.href).not.toContain("pasted-1")
@@ -357,12 +375,12 @@ describe("decision trace page", () => {
   it("rejects bad input with an announced, specific error and shows no assessment", async () => {
     const user = userEvent.setup()
     renderApp("/app/decision-trace", { signedIn: true })
-    await user.click(await screen.findByRole("button", { name: "Inspect" }))
-    expect(await screen.findByRole("alert")).toHaveTextContent("Paste an assessment response first.")
+    await user.click(await screen.findByRole("button", { name: "Explain" }))
+    expect(await screen.findByRole("alert")).toHaveTextContent("Paste a response first.")
 
     await user.click(screen.getByLabelText("Response JSON"))
     await user.paste("{not json")
-    await user.click(screen.getByRole("button", { name: "Inspect" }))
+    await user.click(screen.getByRole("button", { name: "Explain" }))
     expect(await screen.findByRole("alert")).toHaveTextContent(/isn.t valid JSON/)
     expect(screen.getByLabelText("Response JSON")).toHaveAttribute("aria-invalid", "true")
     expect(screen.queryByRole("heading", { name: "Decision trace" })).not.toBeInTheDocument()
@@ -371,8 +389,8 @@ describe("decision trace page", () => {
   it("loads a clearly-labelled sample and can clear it", async () => {
     const user = userEvent.setup()
     renderApp("/app/decision-trace", { signedIn: true })
-    await user.click(await screen.findByRole("button", { name: /Load a sample/ }))
-    expect(await screen.findByText(/illustrative sample assessment, not one of your assessments/)).toBeInTheDocument()
+    await user.click(await screen.findByRole("button", { name: /Try an example/ }))
+    expect(await screen.findByText(/made-up example, not one of your checks/)).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Clear" }))
     expect(screen.queryByRole("heading", { name: "Decision trace" })).not.toBeInTheDocument()
   })
@@ -384,7 +402,7 @@ describe("read-only reference and unavailable pages", () => {
     renderApp("/app/rules", { signedIn: true })
     expect(await screen.findByRole("table", { name: "Rule catalogue" })).toBeInTheDocument()
     expect(screen.getByText("71 of 71 rules")).toBeInTheDocument()
-    expect(screen.getByText(/aren.t exposed by the platform API yet/)).toBeInTheDocument()
+    expect(screen.getByText(/you can.t change rules\s+here/)).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /edit|save|enable|disable|delete/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("columnheader", { name: /weight|threshold|mode/i })).not.toBeInTheDocument()
 
@@ -397,8 +415,8 @@ describe("read-only reference and unavailable pages", () => {
   })
 
   it.each([
-    ["/app/transactions", "Transactions aren't available yet"],
-    ["/app/cases", "Case management isn't available yet"],
+    ["/app/transactions", "This page isn't ready yet"],
+    ["/app/cases", "This page isn't ready yet"],
   ])("%s says the feature is unavailable instead of faking data", async (route, message) => {
     renderApp(route, { signedIn: true })
     expect(await screen.findByText(message)).toBeInTheDocument()
@@ -426,28 +444,25 @@ describe("read-only reference and unavailable pages", () => {
 
   it("cases: offers no controls that imply persistence", async () => {
     renderApp("/app/cases", { signedIn: true })
-    await screen.findByText("Case management isn't available yet")
-    expect(screen.getByText("Not functional")).toBeInTheDocument()
+    await screen.findByText("This page isn't ready yet")
+    expect(screen.getByText("Planned")).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /create|assign|resolve|save|add note/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument()
   })
 
   it("policies: separates score from action and uses the real vocabulary", async () => {
     renderApp("/app/policies", { signedIn: true })
-    expect(await screen.findByText("Risk score is not the final customer action.")).toBeInTheDocument()
+    expect(await screen.findByText("How a policy works")).toBeInTheDocument()
     for (const value of ["Proceed", "Step-up", "Manual review", "Block"]) expect(screen.getByText(value)).toBeInTheDocument()
     expect(screen.queryByText(/AUTO_APPROVE|DECLINE_RECOMMENDED/)).not.toBeInTheDocument()
-    for (const status of ["EXECUTED", "NO_POLICY_CONFIGURED", "POLICY_INVALID", "NOT_EXECUTED"]) {
-      expect(screen.getByText(status)).toBeInTheDocument()
-    }
+    expect(screen.getByText(/The recommendation is advice/)).toBeInTheDocument()
   })
 
   it("signals: describes inputs and does not claim families are active", async () => {
     renderApp("/app/signals", { signedIn: true })
-    expect(await screen.findByRole("heading", { name: "Evidence you supply" })).toBeInTheDocument()
-    expect(screen.getByRole("heading", { name: "Context the platform derives" })).toBeInTheDocument()
-    expect(screen.getByText(/doesn.t claim that every catalogue family is active/)).toBeInTheDocument()
-    expect(screen.getByText("A live signal feed isn't available yet")).toBeInTheDocument()
+    expect(await screen.findByRole("heading", { name: "What you send us" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "What we work out for you" })).toBeInTheDocument()
+    expect(screen.getByText(/we say so instead\s+of guessing/)).toBeInTheDocument()
   })
 })
 
@@ -472,32 +487,33 @@ describe("api page", () => {
     renderApp("/app/api", { signedIn: true })
     expect(await screen.findByText("This data failed to load")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument()
-    expect(screen.getByText(/does not mean there is no data/)).toBeInTheDocument()
+    expect(screen.getByText(/Your data is still there/)).toBeInTheDocument()
   })
 })
 
 describe("shell, navigation and guards", () => {
-  it("shows the grouped Fraud Detect navigation and the BrandSecOps → Fraud Detect brand", async () => {
+  it("shows the grouped FraudDetect navigation and the BrandSecOps → FraudDetect brand", async () => {
     renderApp("/app/overview", { signedIn: true })
     const nav = await screen.findByRole("navigation", { name: "Application" })
-    for (const heading of ["Overview", "Detection", "Investigation", "Configuration"]) {
+    for (const heading of ["Overview", "Checks", "Developer", "Setup"]) {
       expect(within(nav).getByText(heading)).toBeInTheDocument()
     }
-    for (const link of ["Dashboard", "Assessments", "Transactions", "Signals", "Rules", "Cases", "Decision Trace", "Policies", "API", "Settings"]) {
+    for (const link of ["Dashboard", "Analytics", "Assessments", "Signals", "Rules", "Decision Trace", "Policies", "API", "LIVE access", "Settings"]) {
       expect(within(nav).getByRole("link", { name: new RegExp(`^${link}`) })).toBeInTheDocument()
     }
     // existing functionality stays reachable
     expect(within(nav).getByRole("link", { name: /^Credentials/ })).toBeInTheDocument()
     expect(within(nav).getByRole("link", { name: /^Audit log/ })).toBeInTheDocument()
     expect(screen.getAllByText("BrandSecOps").length).toBeGreaterThan(0)
-    expect(screen.getAllByText("Fraud Detect").length).toBeGreaterThan(0)
-    expect(document.body.textContent).not.toMatch(/clarion/i)
+    expect(screen.getAllByText("FraudDetect").length).toBeGreaterThan(0)
+    expect(document.body.textContent).toMatch(/FraudDetect/)
   })
 
-  it("tags pages with no backing API as Soon, and marks the current page", async () => {
+  it("keeps pages with no backing API out of the menu, and marks the current page", async () => {
     renderApp("/app/rules", { signedIn: true })
     const nav = await screen.findByRole("navigation", { name: "Application" })
-    expect(within(nav).getByRole("link", { name: /^Cases/ })).toHaveTextContent("Soon")
+    for (const hidden of [/^Cases/, /^Transactions/]) expect(within(nav).queryByRole("link", { name: hidden })).not.toBeInTheDocument()
+    expect(within(nav).queryByText("Soon")).not.toBeInTheDocument()
     expect(within(nav).getByRole("link", { name: /^Rules/ })).toHaveAttribute("aria-current", "page")
   })
 
@@ -549,20 +565,20 @@ describe("shell, navigation and guards", () => {
 })
 
 describe("public landing page", () => {
-  it("presents Fraud Detect as a BrandSecOps product, with both calls to action", async () => {
+  it("presents FraudDetect as a BrandSecOps product, with both calls to action", async () => {
     renderApp("/")
-    expect(await screen.findByRole("heading", { level: 1, name: "Fraud Detect" })).toBeInTheDocument()
+    expect(await screen.findByRole("heading", { level: 1, name: "FraudDetect" })).toBeInTheDocument()
     expect(screen.getByText("Real-time fraud detection for modern payments.")).toBeInTheDocument()
     expect(screen.getAllByText("BrandSecOps").length).toBeGreaterThan(0)
-    const hero = screen.getByRole("region", { name: "Fraud Detect" })
+    const hero = screen.getByRole("region", { name: "FraudDetect" })
     expect(within(hero).getByRole("link", { name: /^Get started/ })).toHaveAttribute("href", "/signup")
-    expect(within(hero).getByRole("link", { name: "Explore Fraud Detect" })).toHaveAttribute("href", "#product")
+    expect(within(hero).getByRole("link", { name: "Explore FraudDetect" })).toHaveAttribute("href", "#product")
     expect(screen.getByText("Bring fraud detection into your security stack.")).toBeInTheDocument()
   })
 
   it("has every specified section", async () => {
     renderApp("/")
-    await screen.findByRole("heading", { level: 1, name: "Fraud Detect" })
+    await screen.findByRole("heading", { level: 1, name: "FraudDetect" })
     for (const name of [
       "Fraud signals are fragmented.",
       "From payment to action, in one explainable pass.",
@@ -590,17 +606,17 @@ describe("public landing page", () => {
 
   it("labels its product previews as sample data", async () => {
     renderApp("/")
-    await screen.findByRole("heading", { level: 1, name: "Fraud Detect" })
+    await screen.findByRole("heading", { level: 1, name: "FraudDetect" })
     expect(screen.getByRole("group", { name: /Illustrative product preview/ })).toBeInTheDocument()
     expect(screen.getByRole("group", { name: /Illustrative dashboard preview with sample data/ })).toBeInTheDocument()
     expect(screen.getAllByText("Sample data").length).toBeGreaterThanOrEqual(2)
   })
 
-  it("makes no unsupported claims and never brands itself as Clarion or as ML/AI", async () => {
+  it("makes no unsupported claims and brands itself as FraudDetect and never as ML/AI", async () => {
     renderApp("/")
-    await screen.findByRole("heading", { level: 1, name: "Fraud Detect" })
+    await screen.findByRole("heading", { level: 1, name: "FraudDetect" })
     const text = document.body.textContent ?? ""
-    expect(text).not.toMatch(/clarion/i)
+    expect(text).toMatch(/FraudDetect/)
     expect(text).not.toMatch(/100%|zero false positives|guaranteed|blocks every|AI-powered|AI powered/i)
     // the only mentions of machine learning are negations
     for (const match of text.matchAll(/machine learning/gi)) {
@@ -609,31 +625,31 @@ describe("public landing page", () => {
     }
   })
 
-  it("shows the BrandSecOps › Security Products › Fraud Detect hierarchy without inventing products", async () => {
+  it("shows the BrandSecOps › Security Products › FraudDetect hierarchy without inventing products", async () => {
     renderApp("/")
-    await screen.findByRole("heading", { level: 1, name: "Fraud Detect" })
+    await screen.findByRole("heading", { level: 1, name: "FraudDetect" })
     expect(screen.getByText("Security Products")).toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "Security Products" })).not.toBeInTheDocument()
   })
 
   it("has a skip link and marks unavailable footer links as such", async () => {
     renderApp("/")
-    await screen.findByRole("heading", { level: 1, name: "Fraud Detect" })
+    await screen.findByRole("heading", { level: 1, name: "FraudDetect" })
     expect(screen.getByRole("link", { name: "Skip to content" })).toBeInTheDocument()
     expect(screen.getByText("Privacy policy · soon")).toHaveAttribute("aria-disabled", "true")
   })
 })
 
 describe("auth screens", () => {
-  it("sign-in and sign-up carry Fraud Detect branding, not Clarion", async () => {
+  it("sign-in and sign-up carry FraudDetect branding", async () => {
     const { unmount } = renderApp("/signin")
     expect(await screen.findByRole("heading", { name: "Sign in" })).toBeInTheDocument()
-    expect(screen.getByText("Sign in to Fraud Detect.")).toBeInTheDocument()
-    expect(document.body.textContent).not.toMatch(/clarion/i)
+    expect(screen.getByText("Sign in to FraudDetect.")).toBeInTheDocument()
+    expect(document.body.textContent).toMatch(/FraudDetect/)
     unmount()
 
     renderApp("/signup")
     expect(await screen.findByRole("heading", { name: "Create your account" })).toBeInTheDocument()
-    expect(document.body.textContent).not.toMatch(/clarion/i)
+    expect(document.body.textContent).toMatch(/FraudDetect/)
   })
 })

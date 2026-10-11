@@ -33,12 +33,12 @@ export function SecretRevealDialog({ open, onOpenChange, secret, keyPrefix }: Se
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
-        <DialogTitle>Your new API credential</DialogTitle>
-        <DialogDescription>Key prefix: {keyPrefix}</DialogDescription>
+        <DialogTitle>Your new API key</DialogTitle>
+        <DialogDescription>It starts with {keyPrefix}</DialogDescription>
 
         <Alert variant="warning" title="This is shown only once" className="mt-4">
-          Copy this secret now and store it somewhere safe. You won't be able to view it
-          again after closing this dialog.
+          Copy the key now and keep it somewhere safe, like your server's settings. You can't see it again after you
+          close this window. Never put it in a website or app.
         </Alert>
 
         <div className="mt-4 flex items-center gap-2 rounded-control border border-line-strong bg-canvas px-3 py-2.5">

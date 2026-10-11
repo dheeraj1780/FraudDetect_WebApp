@@ -44,9 +44,6 @@ export function AssessmentCard({ assessment, className }: { assessment: Assessme
             </p>
           </div>
           <ScoreMeter score={assessment.risk_score} band={assessment.risk_band} />
-          <p className="text-xs text-fg-subtle">
-            Confidence: not returned by the API in this release.
-          </p>
         </div>
 
         <div className="flex flex-col gap-4 bg-panel p-5">
@@ -55,10 +52,10 @@ export function AssessmentCard({ assessment, className }: { assessment: Assessme
           <p className="text-[13px] text-fg-muted">
             {rec
               ? RECOMMENDATION_STYLES[rec].description
-              : "Policy produced no recommendation. A missing recommendation is never “proceed”."}
+              : "Your policy gave no recommendation. Don't treat that as “proceed”."}
           </p>
           <p className="text-xs text-fg-subtle">
-            The score is not the final action. The recommendation comes from policy.
+            The score shows how risky it looks. Your policy turns it into this recommendation.
           </p>
         </div>
       </div>

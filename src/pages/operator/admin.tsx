@@ -320,7 +320,7 @@ export function OperatorSecurity() {
         </Button>
         {error ? <Alert variant="error" className="mt-2">{error}</Alert> : null}
         {codes ? (
-          <Alert variant="warning" title="New recovery codes — shown once" className="mt-3">
+          <Alert variant="warning" title="New recovery codes, shown once" className="mt-3">
             <ul className="mt-1 grid grid-cols-2 gap-1 font-mono">
               {codes.map((c) => (
                 <li key={c}>{c}</li>

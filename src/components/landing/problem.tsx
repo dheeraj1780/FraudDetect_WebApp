@@ -12,7 +12,7 @@ export function Problem() {
             id="problem-heading"
             eyebrow="The problem"
             title="Fraud signals are fragmented."
-            description="Payment, device, account and network data are usually evaluated in separate places, so a suspicious pattern is hard to see and harder to explain. Fraud Detect brings them into one explainable risk evaluation."
+            description="Payment, device, account and network data are usually evaluated in separate places, so a suspicious pattern is hard to see and harder to explain. FraudDetect brings them into one explainable risk evaluation."
           />
         </Reveal>
         <Reveal delay={100}>

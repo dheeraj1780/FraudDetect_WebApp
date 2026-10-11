@@ -1,11 +1,9 @@
 import type { LucideIcon } from "lucide-react"
 import {
   Activity,
-  ArrowLeftRight,
   BarChart3,
   Code2,
   FlaskConical,
-  FolderSearch,
   GitBranch,
   KeyRound,
   LayoutDashboard,
@@ -39,23 +37,18 @@ export const APP_NAV_GROUPS: AppNavGroup[] = [
     heading: "Overview",
     links: [
       { label: "Dashboard", to: "/app/overview", icon: LayoutDashboard },
-      { label: "Analytics", to: "/app/analytics", icon: BarChart3, soon: true },
+      { label: "Analytics", to: "/app/analytics", icon: BarChart3 },
     ],
   },
   {
-    heading: "Detection",
+    // Transactions and Cases have no backing API yet; their pages still exist (and say so) but are
+    // kept out of the menu so tenants aren't sent to empty screens.
+    heading: "Checks",
     links: [
       { label: "Assessments", to: "/app/assessments", icon: Activity },
-      { label: "Transactions", to: "/app/transactions", icon: ArrowLeftRight, soon: true },
-      { label: "Signals", to: "/app/signals", icon: Radar },
-      { label: "Rules", to: "/app/rules", icon: ListChecks },
-    ],
-  },
-  {
-    heading: "Investigation",
-    links: [
-      { label: "Cases", to: "/app/cases", icon: FolderSearch, soon: true },
       { label: "Decision Trace", to: "/app/decision-trace", icon: GitBranch },
+      { label: "Rules", to: "/app/rules", icon: ListChecks },
+      { label: "Signals", to: "/app/signals", icon: Radar },
     ],
   },
   {
@@ -70,7 +63,7 @@ export const APP_NAV_GROUPS: AppNavGroup[] = [
     ],
   },
   {
-    heading: "Configuration",
+    heading: "Setup",
     links: [
       { label: "Policies", to: "/app/policies", icon: Scale },
       { label: "Credentials", to: "/app/credentials", icon: KeyRound },

@@ -14,15 +14,12 @@ import { cn } from "@/lib/utils"
 
 const MAX_PASTE_CHARS = 100_000
 
-const STAGES: { name: string; body: string; exposed: boolean }[] = [
-  { name: "Input", body: "The evidence your backend submitted.", exposed: true },
-  { name: "Normalization", body: "Values standardised for evaluation.", exposed: false },
-  { name: "Signals", body: "Facts extracted from the input and context.", exposed: false },
-  { name: "Rules", body: "Rules evaluated; triggered rules reported.", exposed: true },
-  { name: "Score", body: "Rule contributions combined into a risk score and band.", exposed: true },
-  { name: "Confidence", body: "How much evidence backs the score.", exposed: false },
-  { name: "Policy", body: "Your tenant policy applied to the score.", exposed: true },
-  { name: "Recommendation", body: "Proceed, step-up, review or block.", exposed: true },
+const STAGES: { name: string; body: string }[] = [
+  { name: "Received", body: "Your server sends us a payment or event." },
+  { name: "Rules", body: "We look for warning signs, like a card from a different country." },
+  { name: "Score", body: "Each warning sign adds points, from 0 to 100." },
+  { name: "Policy", body: "Your policy turns the score into advice." },
+  { name: "Recommendation", body: "Proceed, step-up, review or block." },
 ]
 
 type Inspected = { assessment: AssessmentOut; origin: "pasted" | "sample" }
@@ -37,11 +34,11 @@ export function DecisionTracePage() {
     event.preventDefault()
     setError(null)
     if (!text.trim()) {
-      setError("Paste an assessment response first.")
+      setError("Paste a response first.")
       return
     }
     if (text.length > MAX_PASTE_CHARS) {
-      setError("That's larger than any assessment response. Paste only the response body.")
+      setError("That's too long to be a response. Paste only the response body.")
       return
     }
     const result = parseAssessmentResponse(text)
@@ -69,39 +66,32 @@ export function DecisionTracePage() {
     <div className="mx-auto flex max-w-7xl flex-col gap-6">
       <PageHeader
         title="Decision Trace"
-        description="Why did Fraud Detect make this assessment? Follow one assessment from input to recommendation."
+        description="See why a check got its score and recommendation. To look at your own checks, open one from the Assessments page."
       />
 
       <section aria-labelledby="stages-heading">
-        <h2 id="stages-heading" className="sr-only">
-          Trace stages
+        <h2 id="stages-heading" className="text-sm font-semibold text-fg">
+          How a check works
         </h2>
-        <ol className="grid gap-px overflow-hidden rounded-panel border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-3 grid gap-px overflow-hidden rounded-panel border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
           {STAGES.map((stage, index) => (
             <li key={stage.name} className="flex flex-col gap-1.5 bg-panel p-4">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-[11px] text-fg-subtle">{String(index + 1).padStart(2, "0")}</span>
-                <Badge variant={stage.exposed ? "accent" : "outline"}>{stage.exposed ? "In API response" : "Not returned"}</Badge>
-              </div>
-              <p className="text-[13px] font-semibold uppercase tracking-wider text-fg">{stage.name}</p>
+              <span className="font-mono text-[11px] text-fg-subtle">{index + 1}</span>
+              <p className="text-[13px] font-semibold text-fg">{stage.name}</p>
               <p className="text-xs text-fg-muted">{stage.body}</p>
             </li>
           ))}
         </ol>
-        <p className="mt-2 text-xs text-fg-subtle">
-          The platform returns the outcome of each stage where it is exposed. Stages marked “Not returned” are shown as
-          such in a trace — nothing is filled in.
-        </p>
       </section>
 
       <Card>
         <div className="flex items-start gap-3">
           <ClipboardPaste size={18} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
           <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-semibold text-fg">Inspect an assessment response</h2>
+            <h2 className="text-sm font-semibold text-fg">Explain a response</h2>
             <p className="mt-0.5 text-[13px] text-fg-muted">
-              Paste the JSON returned by <span className="font-mono">POST /assessments</span>. It is parsed in your
-              browser only — it isn&apos;t sent anywhere or stored.
+              Paste the response your server got back from <span className="font-mono">POST /assessments</span>, then
+              click Explain. It stays in your browser and is not sent or saved anywhere.
             </p>
 
             <form onSubmit={handleInspect} noValidate className="mt-4 flex flex-col gap-3">
@@ -132,11 +122,11 @@ export function DecisionTracePage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Button type="submit" size="sm">
                   <ShieldCheck size={14} aria-hidden="true" />
-                  Inspect
+                  Explain
                 </Button>
                 <Button type="button" variant="secondary" size="sm" onClick={loadSample}>
                   <FlaskConical size={14} aria-hidden="true" />
-                  Load a sample
+                  Try an example
                 </Button>
                 {text || inspected ? (
                   <Button type="button" variant="ghost" size="sm" onClick={handleClear}>
@@ -157,12 +147,11 @@ export function DecisionTracePage() {
           notice={
             inspected.origin === "sample" ? (
               <Alert variant="warning" title="Sample data">
-                This is an illustrative sample assessment, not one of your assessments.
+                This is a made-up example, not one of your checks.
               </Alert>
             ) : (
               <Alert variant="info">
-                Rendered locally from the JSON you pasted. Fraud Detect hasn&apos;t verified that it came from your
-                account.
+                Shown from the text you pasted. We haven&apos;t checked that it came from your account.
               </Alert>
             )
           }

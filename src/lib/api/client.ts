@@ -37,8 +37,8 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   const { method = "GET", body, auth = true } = options
 
   // Wave 46: the session is an HttpOnly cookie the browser attaches itself (credentials: "include");
-  // this code never sees the session token. X-Clarion-Client asks /auth/login for a cookie session.
-  const headers: Record<string, string> = { Accept: "application/json", "X-Clarion-Client": "web" }
+  // this code never sees the session token. X-FraudDetect-Client asks /auth/login for a cookie session.
+  const headers: Record<string, string> = { Accept: "application/json", "X-FraudDetect-Client": "web" }
   if (body !== undefined) headers["Content-Type"] = "application/json"
   if (method !== "GET") {
     const csrf = getCsrfToken()

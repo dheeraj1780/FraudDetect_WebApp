@@ -35,17 +35,16 @@ export function CreateCredentialDialog({ open, onOpenChange, onCreated }: Create
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogTitle>Create sandbox credential</DialogTitle>
+        <DialogTitle>Create a SANDBOX API key</DialogTitle>
         <DialogDescription>
-          Issues a new sandbox API credential for this organization. The secret is shown
-          exactly once.
+          A key for testing. We show it only once, so be ready to copy it.
         </DialogDescription>
 
         <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-4">
           {error ? <Alert variant="error">{error}</Alert> : null}
 
           <FormField
-            label="Label (optional)"
+            label="Name (optional, e.g. “Test server”)"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             placeholder="e.g. Staging integration"

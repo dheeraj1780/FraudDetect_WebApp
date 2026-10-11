@@ -45,7 +45,7 @@ export function OperatorShell() {
         <header className="border-b border-line bg-panel">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
             <div className="flex items-center gap-2">
-              <span className="font-semibold">Clarion · Operator console</span>
+              <span className="font-semibold">FraudDetect · Operator console</span>
               <Badge variant="warning">Internal</Badge>
             </div>
             <nav aria-label="Operator" className="flex flex-wrap gap-1">

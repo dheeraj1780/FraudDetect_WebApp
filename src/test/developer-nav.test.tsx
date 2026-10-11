@@ -62,7 +62,7 @@ describe("API (Developer) page (Wave 32B)", () => {
 
   it("still shows the real credentials table (unchanged behavior)", async () => {
     renderApp("/app/api", { signedIn: true })
-    expect(await screen.findByText("Your credentials")).toBeInTheDocument()
+    expect(await screen.findByText("Your API keys")).toBeInTheDocument()
   })
 })
 

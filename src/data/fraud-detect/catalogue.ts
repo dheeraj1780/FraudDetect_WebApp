@@ -328,7 +328,7 @@ export const CATALOGUE_FAMILIES: CatalogueFamily[] = [
       },
       {
         "id": "F9-VEL-008",
-        "name": "Burst activity across related entities — requires relationship/graph capability where applicable; do not duplicate graph/relationship scoring"
+        "name": "Burst activity across related entities; requires relationship/graph capability where applicable; do not duplicate graph/relationship scoring"
       }
     ]
   },

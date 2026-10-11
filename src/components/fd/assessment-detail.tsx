@@ -1,4 +1,4 @@
-import { CircleSlash, Repeat } from "lucide-react"
+import { Repeat } from "lucide-react"
 import type { ReactNode } from "react"
 import { AssessmentCard } from "@/components/fd/assessment-card"
 import { DecisionTrace } from "@/components/fd/decision-trace"
@@ -29,15 +29,6 @@ function SidePanel({ title, children }: { title: string; children: ReactNode }) 
   )
 }
 
-function Unreturned({ children }: { children: ReactNode }) {
-  return (
-    <p className="flex items-start gap-2 text-[13px] text-fg-muted">
-      <CircleSlash size={14} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden="true" />
-      <span>{children}</span>
-    </p>
-  )
-}
-
 interface AssessmentDetailProps {
   assessment: AssessmentOut
   /** Rendered above the header — e.g. the sample-data banner or “pasted response” notice. */
@@ -51,8 +42,8 @@ interface AssessmentDetailProps {
 
 /**
  * Full analyst view of one assessment. Renders only the fields of the real AssessmentOut.
- * Sections the response has no data for (evidence, telemetry, confidence) are shown as
- * explicitly "not returned" rather than left out or filled in.
+ * Sections the response has no data for (evidence, telemetry, confidence) are left out rather than
+ * filled in.
  */
 export function AssessmentDetail({ assessment, notice, tag, environment }: AssessmentDetailProps) {
   const reasons = assessment.reasons.map((r) => parseReasonCode(r.reason_code))
@@ -68,9 +59,9 @@ export function AssessmentDetail({ assessment, notice, tag, environment }: Asses
           <p className="text-[11px] uppercase tracking-wider text-fg-subtle">Assessment</p>
           {tag}
           {assessment.idempotent_replay ? (
-            <Badge variant="neutral" title="The original result for this idempotency key was returned; the engine was not re-run.">
+            <Badge variant="neutral" title="You sent this request before with the same idempotency key, so you got the first result back instead of a new check.">
               <Repeat size={11} aria-hidden="true" />
-              Idempotent replay
+              Repeat request
             </Badge>
           ) : null}
         </div>
@@ -86,7 +77,7 @@ export function AssessmentDetail({ assessment, notice, tag, environment }: Asses
           </div>
           <div className="flex gap-1.5">
             <dt className="text-fg-subtle">Environment</dt>
-            <dd className="capitalize text-fg-muted">{environment ?? "Not included in the response"}</dd>
+            <dd className="capitalize text-fg-muted">{environment ?? "Not shown"}</dd>
           </div>
         </dl>
       </header>
@@ -97,9 +88,9 @@ export function AssessmentDetail({ assessment, notice, tag, environment }: Asses
         <div className="flex min-w-0 flex-col gap-5">
           <section aria-labelledby="flagged-heading">
             <h2 id="flagged-heading" className="text-sm font-semibold text-fg">
-              Why this assessment was flagged
+              Why it got this score
             </h2>
-            <p className="mt-0.5 text-[13px] text-fg-muted">Triggered signals, as reported by the engine.</p>
+            <p className="mt-0.5 text-[13px] text-fg-muted">The warning signs we found. Each one adds to the risk score.</p>
             {reasons.length > 0 ? (
               <ul className="mt-3 divide-y divide-line rounded-panel border border-line bg-panel">
                 {reasons.map((reason) => (
@@ -115,7 +106,7 @@ export function AssessmentDetail({ assessment, notice, tag, environment }: Asses
               </ul>
             ) : (
               <p className="mt-3 rounded-panel border border-dashed border-line-strong px-4 py-4 text-[13px] text-fg-muted">
-                No signals were reported as triggered for this assessment.
+                No warning signs were found.
               </p>
             )}
           </section>
@@ -126,23 +117,15 @@ export function AssessmentDetail({ assessment, notice, tag, environment }: Asses
         </div>
 
         <aside aria-label="Assessment context" className="flex flex-col gap-4">
-          <SidePanel title="Evaluation state">
+          <SidePanel title="How complete was the check?">
             <EvaluationStateBadge state={state} />
             <p className="mt-2 text-[13px] text-fg-muted">
-              {stateInfo ? stateInfo.description : "Not reported for this assessment."}
+              {stateInfo ? stateInfo.description : "Not reported for this check."}
             </p>
-            <p className="mt-2 text-xs text-fg-subtle">A coverage fact — not a risk or confidence measure.</p>
+            <p className="mt-2 text-xs text-fg-subtle">This shows how much we could check. It is not a risk level.</p>
           </SidePanel>
 
-          <SidePanel title="Evidence">
-            <Unreturned>Rule evidence isn&apos;t returned by the API in this release.</Unreturned>
-          </SidePanel>
-
-          <SidePanel title="Telemetry">
-            <Unreturned>Telemetry quality isn&apos;t returned by the API in this release.</Unreturned>
-          </SidePanel>
-
-          <SidePanel title="Engine">
+          <SidePanel title="Version details (for support)">
             <dl className="flex flex-col gap-2 text-xs">
               {(
                 [

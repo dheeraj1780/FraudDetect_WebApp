@@ -1,8 +1,8 @@
 # Authenticated app architecture
 
-The public Fraud Detect landing page lives at `/`. The authenticated console lives under `/signin`,
+The public FraudDetect landing page lives at `/`. The authenticated console lives under `/signin`,
 `/signup` and `/app/*` and talks to `fraud-platform-api` (`/api/v1`). The frontend stack and the
-auth/tenant/API layers below are unchanged by the Fraud Detect redesign (a UI-only change).
+auth/tenant/API layers below are unchanged by the FraudDetect redesign (a UI-only change).
 
 ## Layers
 
@@ -58,7 +58,7 @@ In dev, Vite proxies `/api` to `http://localhost:8000`, so no CORS setup is need
 `npm test` (Vitest + Testing Library + MSW). Handlers in `src/test/server.ts` use response
 shapes verified against a live backend.
 
-## Fraud Detect console (Wave 30)
+## FraudDetect console (Wave 30)
 
 Routes under `/app` (all behind `RequireAuth` → `RequireTenant`, inside `AppShell`):
 

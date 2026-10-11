@@ -21,8 +21,8 @@ export function MfaEnrollment({ onDone }: { onDone: () => void }) {
   if (codes) {
     return (
       <div className="flex flex-col gap-3">
-        <Alert variant="warning" title="Save your recovery codes — shown only once">
-          Each code works once if you lose your authenticator app. Store them somewhere safe and offline.
+        <Alert variant="warning" title="Save your recovery codes. They are shown only once">
+          If you lose your phone, each code lets you sign in once. Write them down or store them somewhere safe, not on the same phone.
         </Alert>
         <ul className="grid grid-cols-2 gap-2 font-mono text-sm" aria-label="Recovery codes">
           {codes.map((c) => (
@@ -64,7 +64,7 @@ export function MfaEnrollment({ onDone }: { onDone: () => void }) {
               }
             }}
           >
-            Set up an authenticator app
+            Set up two-factor sign-in
           </Button>
         </div>
       ) : (
@@ -95,7 +95,7 @@ export function MfaEnrollment({ onDone }: { onDone: () => void }) {
             Can&apos;t scan? Enter this key manually: <span className="break-all font-mono text-fg">{enrollment.secret}</span>
           </p>
           <label className="flex flex-col gap-1 text-[13px] text-fg-muted">
-            Code from your authenticator
+            6-digit code from the app
             <input className={INPUT} inputMode="numeric" autoComplete="one-time-code" maxLength={10} value={code} onChange={(e) => setCode(e.target.value)} />
           </label>
           <div>

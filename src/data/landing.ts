@@ -46,7 +46,7 @@ export interface FooterColumn {
 
 export const FOOTER_COLUMNS: FooterColumn[] = [
   {
-    heading: "Fraud Detect",
+    heading: "FraudDetect",
     links: [
       { label: "Overview", href: "#product" },
       { label: "How it works", href: "#how-it-works" },
@@ -94,7 +94,7 @@ export const FLOW_STEPS: { title: string; body: string; icon: LucideIcon }[] = [
   { title: "Rule evaluation", body: "Configured rules check the signals; triggered rules are recorded.", icon: ListChecks },
   { title: "Risk score", body: "Rule contributions combine into a score and a risk band.", icon: Activity },
   { title: "Policy", body: "Your tenant policy maps the score to a recommendation.", icon: Scale },
-  { title: "Action", body: "You receive proceed, step-up, review or block — and decide what to do.", icon: ShieldCheck },
+  { title: "Action", body: "You receive proceed, step-up, review or block, and decide what to do.", icon: ShieldCheck },
 ]
 
 export const FEATURES: { icon: LucideIcon; title: string; body: string }[] = [
@@ -106,7 +106,7 @@ export const FEATURES: { icon: LucideIcon; title: string; body: string }[] = [
   {
     icon: Eye,
     title: "Explainable signals",
-    body: "Every result names the rules that triggered, so analysts can see why — not just a number.",
+    body: "Every result names the rules that triggered, so analysts can see why, not just a number.",
   },
   {
     icon: SlidersHorizontal,

@@ -11,7 +11,7 @@ import { isSuccessOutcome, type CollectorOutcome, type CollectorSubmitResult } f
 import { useAuth } from "@/lib/auth/context"
 
 /**
- * Wave 30 Phase 12: fraud-web-app is Clarion's own tenant back-office dashboard, not a merchant
+ * Wave 30 Phase 12: fraud-web-app is FraudDetect's own tenant back-office dashboard, not a merchant
  * checkout page -- no existing checkout/demo flow exists anywhere in this app to exercise the
  * collector client against (confirmed, Phase 1 reconciliation: zero "checkout"/"collector" code existed
  * before this wave). This is the smallest possible sandbox page to exercise `CollectorClient` end to
@@ -42,7 +42,7 @@ const OUTCOME_COPY: Record<CollectorOutcome, { title: string; description: strin
   },
   accepted_duplicate: {
     title: "Accepted (already recorded)",
-    description: "This exact token was already submitted once. The original observation stands unchanged — this is expected on a retry, not an error.",
+    description: "This exact token was already submitted once. The original observation stands unchanged. This is expected on a retry, not an error.",
   },
   rejected_not_production_ready: {
     title: "Collector not ready",
@@ -62,11 +62,11 @@ const OUTCOME_COPY: Record<CollectorOutcome, { title: string; description: strin
   },
   rejected_token_invalid: {
     title: "Invalid token",
-    description: "The token failed verification — expired, tampered, signed by an unknown key, or otherwise not trustworthy. Issue a fresh one from your backend.",
+    description: "The token failed verification: expired, tampered, signed by an unknown key, or otherwise not trustworthy. Issue a fresh one from your backend.",
   },
   rejected_storage_failure: {
     title: "Storage failure",
-    description: "The collector couldn't persist the observation due to an internal failure. Your checkout flow is unaffected — this is evidence-only.",
+    description: "The collector couldn't persist the observation due to an internal failure. Your checkout flow is unaffected. This is evidence only.",
   },
   client_token_not_set: {
     title: "No token entered",
@@ -78,7 +78,7 @@ const OUTCOME_COPY: Record<CollectorOutcome, { title: string; description: strin
   },
   client_network_failure: {
     title: "Network failure",
-    description: "The request never reached the server (offline, DNS, TLS, or a CORS preflight rejection — a disallowed browser origin looks identical to a network failure from here).",
+    description: "The request never reached the server (offline, DNS, TLS, or a CORS preflight rejection; a disallowed browser origin looks identical to a network failure from here).",
   },
   client_malformed_server_response: {
     title: "Unrecognized server response",
@@ -134,7 +134,7 @@ export function CollectorSandboxDemo() {
         <CardTitle>What this tests</CardTitle>
         <CardDescription>
           The collector observes the connection that reaches it from a customer&apos;s browser, and
-          correlates that observation to a later assessment by <span className="font-mono">flow_id</span> —
+          correlates that observation to a later assessment by <span className="font-mono">flow_id</span>,
           the same identifier you already send to <span className="font-mono">POST /assessments</span>.
           It carries no other payload: no telemetry, no form data, nothing beyond the token below.
         </CardDescription>
@@ -142,7 +142,7 @@ export function CollectorSandboxDemo() {
           Before using this page you need a token from{" "}
           <span className="font-mono">POST /api/v1/collector/tokens</span>, issued by your OWN backend
           using an API credential (see <Link to="/app/credentials" className="text-accent underline-offset-2 hover:underline">Credentials</Link>).
-          This page never issues a token itself — that call is server-to-server, authenticated with a
+          This page never issues a token itself. That call is server-to-server, authenticated with a
           secret that must never reach a browser.
         </CardDescription>
       </Card>
@@ -164,7 +164,7 @@ export function CollectorSandboxDemo() {
             autoComplete="off"
             value={tokenInput}
             onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="CLARION-COLLECTOR-TOKEN-V1...."
+            placeholder="FRAUDDETECT-COLLECTOR-TOKEN-V1...."
             data-testid="collector-token-input"
           />
         </label>

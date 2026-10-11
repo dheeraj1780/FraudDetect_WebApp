@@ -9,9 +9,9 @@ import { authApi } from "@/lib/api/endpoints/auth"
 import { useAuth } from "@/lib/auth/context"
 
 const POLICY_TEXT: Record<string, string> = {
-  optional: "Two-factor authentication is optional on this deployment.",
-  required_for_live: "Two-factor authentication is required for LIVE actions (requesting LIVE access, LIVE credentials, disputes).",
-  required: "Two-factor authentication is required for everyone on this deployment.",
+  optional: "Optional, but recommended. You enter a code from an app on your phone when you sign in.",
+  required_for_live: "Needed before you can do anything with LIVE, like asking for LIVE access or creating LIVE keys. You enter a code from an app on your phone.",
+  required: "Required for everyone. You enter a code from an app on your phone when you sign in.",
 }
 
 /** Wave 46: the signed-in user's own MFA. Turning it off needs a current authenticator code. */
@@ -24,7 +24,7 @@ export function SecurityCard() {
   return (
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <CardTitle>Two-factor authentication</CardTitle>
+        <CardTitle>Two-factor sign-in</CardTitle>
         <Badge variant={user.mfa_enabled ? "success" : "outline"}>{user.mfa_enabled ? "On" : "Off"}</Badge>
       </div>
       <CardDescription className="mt-1">{POLICY_TEXT[user.tenant_mfa_policy] ?? ""}</CardDescription>
@@ -42,7 +42,7 @@ export function SecurityCard() {
                   await authApi.disableMfa(disableCode.trim())
                   await refreshSession()
                 } catch (err) {
-                  setError(err instanceof ApiError ? err.message : "Could not turn off two-factor authentication.")
+                  setError(err instanceof ApiError ? err.message : "Could not turn off two-factor sign-in.")
                 } finally {
                   setDisableCode("")
                   setPending(false)

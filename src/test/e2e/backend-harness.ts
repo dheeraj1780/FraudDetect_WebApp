@@ -62,7 +62,7 @@ export async function spawnBackend(options: { port: number; corsOrigin: string; 
     return { baseUrl: `http://127.0.0.1:${options.port}`, available: false, process: undefined, dbPath: undefined, log: () => "" }
   }
 
-  const tmpDir = mkdtempSync(path.join(tmpdir(), "clarion-collector-e2e-"))
+  const tmpDir = mkdtempSync(path.join(tmpdir(), "frauddetect-collector-e2e-"))
   const dbPath = path.join(tmpDir, "e2e.db").replace(/\\/g, "/")
   const baseUrl = `http://127.0.0.1:${options.port}`
 
@@ -71,12 +71,12 @@ export async function spawnBackend(options: { port: number; corsOrigin: string; 
   // construction (CHECK_CONSTANTS["entity"], HMAC-SHA256) the server itself verifies against, mirroring
   // fraud-platform-api's own tests/key_support.py::key_check for exactly this reason.
   const entityHashKey = "a".repeat(32)
-  const entityHashKeyCheck = createHmac("sha256", entityHashKey).update("clarion-key-check|entity-identity-domain").digest("hex")
+  const entityHashKeyCheck = createHmac("sha256", entityHashKey).update("frauddetect-key-check|entity-identity-domain").digest("hex")
 
   const sharedEnv: NodeJS.ProcessEnv = {
     ...process.env,
     // Wave 46: never let a developer's fraud-platform-api/.env change what the e2e backend does.
-    CLARION_DOTENV_FILE: "none",
+    FRAUDDETECT_DOTENV_FILE: "none",
     DATABASE_URL: `sqlite+aiosqlite:///${dbPath}`,
     ENTITY_HASH_KEY: entityHashKey,
     ENTITY_HASH_KEY_EPOCH: "1",

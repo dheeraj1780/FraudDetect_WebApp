@@ -190,7 +190,7 @@ describe("real assessment detail", () => {
     )
     renderApp(`/app/assessments/${fx.processingAssessmentDetail.assessment_id}`, { signedIn: true })
     expect(await screen.findByText("Processing")).toBeInTheDocument()
-    expect(screen.getByText(/still being evaluated/)).toBeInTheDocument()
+    expect(screen.getByText(/still checking this payment/)).toBeInTheDocument()
     expect(screen.queryByRole("heading", { name: "Decision trace" })).not.toBeInTheDocument()
     expect(screen.queryByText(/risk score/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/%/)).not.toBeInTheDocument()
@@ -204,8 +204,8 @@ describe("real assessment detail", () => {
     )
     renderApp(`/app/assessments/${fx.failedAssessmentDetail.assessment_id}`, { signedIn: true })
     expect(await screen.findByText("Failed")).toBeInTheDocument()
-    expect(screen.getByText(/No assessment was performed/)).toBeInTheDocument()
-    expect(screen.getByText(/no fraud decision was made/i)).toBeInTheDocument()
+    expect(screen.getByText(/this payment was not checked/)).toBeInTheDocument()
+    expect(screen.getByText(/nothing was decided/i)).toBeInTheDocument()
   })
 
   it("renders the identical not-found state for a nonexistent id and another tenant's id", async () => {

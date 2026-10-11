@@ -24,7 +24,7 @@ describe("policies page", () => {
     renderApp("/app/policies", { signedIn: true })
     expect(await screen.findByText("Version 2")).toBeInTheDocument()
     const activeSection = screen.getByText("Version 2").closest("section")!
-    expect(within(activeSection).getByText("Active")).toBeInTheDocument()
+    expect(within(activeSection).getByText("In use")).toBeInTheDocument()
     expect(within(activeSection).getByText("Step-up")).toBeInTheDocument()
     expect(within(activeSection).getByText("Block")).toBeInTheDocument()
   })
@@ -32,8 +32,8 @@ describe("policies page", () => {
   it("shows an honest empty state when there is no active policy", async () => {
     server.use(http.get(`${API}/policies/active`, () => HttpResponse.json(null)))
     renderApp("/app/policies", { signedIn: true })
-    const empty = (await screen.findByText("No active policy")).closest("div")!
-    expect(within(empty).getByText(/NO_POLICY_CONFIGURED/)).toBeInTheDocument()
+    const empty = (await screen.findByText("No policy turned on")).closest("div")!
+    expect(within(empty).getByText(/no recommendation until you create a policy/)).toBeInTheDocument()
   })
 
   it("shows version history once a lineage is known, with all three statuses distinguishable", async () => {
@@ -46,9 +46,9 @@ describe("policies page", () => {
     const rows = within(table).getAllByRole("row").slice(1)
     expect(rows).toHaveLength(3)
     expect(within(rows[0]).getByText("v1")).toBeInTheDocument()
-    expect(within(rows[0]).getByText("Retired")).toBeInTheDocument()
+    expect(within(rows[0]).getByText("Turned off")).toBeInTheDocument()
     expect(within(rows[1]).getByText("v2")).toBeInTheDocument()
-    expect(within(rows[1]).getByText("Active")).toBeInTheDocument()
+    expect(within(rows[1]).getByText("In use")).toBeInTheDocument()
     expect(within(rows[2]).getByText("v3")).toBeInTheDocument()
     expect(within(rows[2]).getByText("Draft")).toBeInTheDocument()
   })
@@ -57,7 +57,7 @@ describe("policies page", () => {
     server.use(http.get(`${API}/policies/active`, () => HttpResponse.json({ code: "Boom", message: "Server exploded." }, { status: 500 })))
     renderApp("/app/policies", { signedIn: true })
     expect(await screen.findByText(/Couldn.t load your active policy: Server exploded\./)).toBeInTheDocument()
-    expect(screen.queryByText("No active policy")).not.toBeInTheDocument()
+    expect(screen.queryByText("No policy turned on")).not.toBeInTheDocument()
   })
 
   it("a retryable failure is shown for version history", async () => {
@@ -80,8 +80,8 @@ describe("policies page", () => {
     await screen.findByText("Version 2")
     expect(screen.queryByRole("button", { name: "New policy" })).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: "New draft version" })).not.toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Retire" })).not.toBeInTheDocument()
-    expect(screen.getByText(/Only owners and admins can draft policy versions/)).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Turn off" })).not.toBeInTheDocument()
+    expect(screen.getByText(/Owners and admins can create policies/)).toBeInTheDocument()
   })
 
   it("admins can draft but not activate, retire, or reactivate", async () => {
@@ -93,8 +93,8 @@ describe("policies page", () => {
     renderApp("/app/policies", { signedIn: true })
     await screen.findByText("Version 2")
     expect(screen.getByRole("button", { name: "New policy" })).toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: "Retire" })).not.toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: /Activate version 3/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Turn off" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /Turn on version 3/ })).not.toBeInTheDocument()
   })
 
   it("an owner can create a draft and it appears in the workspace", async () => {
@@ -105,10 +105,10 @@ describe("policies page", () => {
       http.get(`${API}/policies/:policyId/versions`, () => HttpResponse.json([fx.draftPolicyVersion])),
     )
     renderApp("/app/policies", { signedIn: true })
-    await screen.findByText("No active policy")
+    await screen.findByText("No policy turned on")
     await user.click(screen.getByRole("button", { name: "New policy" }))
 
-    const dialog = await screen.findByRole("dialog", { name: "Create a new policy" })
+    const dialog = await screen.findByRole("dialog", { name: "Create a policy" })
     await user.click(within(dialog).getByRole("button", { name: "Save draft" }))
 
     expect(await screen.findByRole("table", { name: "Policy version history" })).toBeInTheDocument()
@@ -125,13 +125,13 @@ describe("policies page", () => {
       ),
     )
     renderApp("/app/policies", { signedIn: true })
-    await screen.findByText("No active policy")
+    await screen.findByText("No policy turned on")
     await user.click(screen.getByRole("button", { name: "New policy" }))
-    const dialog = await screen.findByRole("dialog", { name: "Create a new policy" })
+    const dialog = await screen.findByRole("dialog", { name: "Create a policy" })
     await user.click(within(dialog).getByRole("button", { name: "Save draft" }))
 
     expect(await within(dialog).findByText(/unsupported recommendation/)).toBeInTheDocument()
-    expect(screen.getByRole("dialog", { name: "Create a new policy" })).toBeInTheDocument()
+    expect(screen.getByRole("dialog", { name: "Create a policy" })).toBeInTheDocument()
   })
 
   it("an owner can activate a draft version via a confirm dialog", async () => {
@@ -147,10 +147,10 @@ describe("policies page", () => {
     )
     renderApp("/app/policies", { signedIn: true })
     const table = await screen.findByRole("table", { name: "Policy version history" })
-    await user.click(within(table).getByRole("button", { name: /Activate version 3/ }))
+    await user.click(within(table).getByRole("button", { name: /Turn on version 3/ }))
 
-    const dialog = await screen.findByRole("dialog", { name: "Activate this policy version?" })
-    await user.click(within(dialog).getByRole("button", { name: "Activate version" }))
+    const dialog = await screen.findByRole("dialog", { name: "Turn on this version?" })
+    await user.click(within(dialog).getByRole("button", { name: "Turn on" }))
     await waitFor(() => expect(activateCalled).toBe(true))
   })
 
@@ -167,9 +167,9 @@ describe("policies page", () => {
     )
     renderApp("/app/policies", { signedIn: true })
     await screen.findByText("Version 2")
-    await user.click(screen.getByRole("button", { name: "Retire" }))
-    const dialog = await screen.findByRole("dialog", { name: "Retire this policy version?" })
-    await user.click(within(dialog).getByRole("button", { name: "Retire version" }))
+    await user.click(screen.getByRole("button", { name: "Turn off" }))
+    const dialog = await screen.findByRole("dialog", { name: "Turn off this policy?" })
+    await user.click(within(dialog).getByRole("button", { name: "Turn off" }))
     await waitFor(() => expect(retireCalled).toBe(true))
   })
 
@@ -186,9 +186,9 @@ describe("policies page", () => {
     )
     renderApp("/app/policies", { signedIn: true })
     const table = await screen.findByRole("table", { name: "Policy version history" })
-    await user.click(within(table).getByRole("button", { name: /Reactivate version 1/ }))
-    const dialog = await screen.findByRole("dialog", { name: "Reactivate this policy version?" })
-    await user.click(within(dialog).getByRole("button", { name: "Reactivate version" }))
+    await user.click(within(table).getByRole("button", { name: /Use version 1 again/ }))
+    const dialog = await screen.findByRole("dialog", { name: "Go back to this version?" })
+    await user.click(within(dialog).getByRole("button", { name: "Use this version" }))
     await waitFor(() => expect(reactivateCalled).toBe(true))
   })
 
@@ -205,14 +205,13 @@ describe("policies page", () => {
     }
   })
 
-  it("the existing explainer content and vocabulary are preserved unchanged", async () => {
+  it("explains how a policy works in plain language, with the real vocabulary", async () => {
     renderApp("/app/policies", { signedIn: true })
-    expect(await screen.findByText("Risk score is not the final customer action.")).toBeInTheDocument()
+    expect(await screen.findByText("How a policy works")).toBeInTheDocument()
     for (const value of ["Proceed", "Step-up", "Manual review", "Block"]) {
       expect(screen.getAllByText(value).length).toBeGreaterThan(0)
     }
-    for (const status of ["EXECUTED", "NO_POLICY_CONFIGURED", "POLICY_INVALID", "NOT_EXECUTED"]) {
-      expect(screen.getByText(status)).toBeInTheDocument()
-    }
+    expect(screen.getByText("The first row must start at 0, so every score gets an answer.")).toBeInTheDocument()
+    expect(screen.getByText(/That never means “proceed”/)).toBeInTheDocument()
   })
 })

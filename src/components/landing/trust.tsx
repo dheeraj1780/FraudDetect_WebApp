@@ -12,7 +12,7 @@ export function Trust() {
             id="security-heading"
             eyebrow="Security & trust"
             title="Controls you can inspect, not just trust."
-            description="Only what the platform does today — described plainly."
+            description="Only what the platform does today, described plainly."
           />
         </Reveal>
         <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { CollectorClient } from "@/lib/collector/collectorClient"
 import { isSuccessOutcome } from "@/lib/collector/types"
 
-const VALID_TOKEN = "CLARION-COLLECTOR-TOKEN-V1.eyJ0ZXN0IjoidHJ1ZSJ9.deadbeef"
+const VALID_TOKEN = "FRAUDDETECT-COLLECTOR-TOKEN-V1.eyJ0ZXN0IjoidHJ1ZSJ9.deadbeef"
 
 function jsonResponse(status: number, body: unknown, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...headers } })
@@ -75,7 +75,7 @@ describe("CollectorClient: token handling (Wave 30 Phase 4)", () => {
       expect(String(url)).not.toContain("?")
       const headerEntries = Object.entries((init?.headers as Record<string, string>) ?? {})
       for (const [name, value] of headerEntries) {
-        expect(name.toLowerCase()).not.toBe("x-clarion-collector-token")
+        expect(name.toLowerCase()).not.toBe("x-frauddetect-collector-token")
         expect(value).not.toContain(VALID_TOKEN)
       }
       expect(JSON.parse(String(init?.body))).toEqual({ token: VALID_TOKEN })

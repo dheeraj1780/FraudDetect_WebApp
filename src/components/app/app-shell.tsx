@@ -6,7 +6,7 @@ import { Topbar } from "@/components/app/topbar"
 import { MobileNavDrawer } from "@/components/app/mobile-nav-drawer"
 
 /**
- * The authenticated Fraud Detect shell: left sidebar (grouped navigation), top context bar
+ * The authenticated FraudDetect shell: left sidebar (grouped navigation), top context bar
  * (tenant, environment, account), and the page outlet. Pages own any right-hand contextual panel.
  */
 export function AppShell() {
@@ -23,7 +23,7 @@ export function AppShell() {
 
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-sidebar lg:flex">
         <div className="flex h-14 items-center border-b border-line px-5">
-          <Link to="/app/overview" aria-label="Fraud Detect by BrandSecOps, dashboard" className="rounded-control">
+          <Link to="/app/overview" aria-label="FraudDetect by BrandSecOps, dashboard" className="rounded-control">
             <Logo />
           </Link>
         </div>

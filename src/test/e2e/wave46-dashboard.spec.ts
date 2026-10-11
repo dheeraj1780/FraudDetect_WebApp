@@ -95,7 +95,7 @@ test.beforeAll(async () => {
     ["app.cli.operators", "bootstrap-supreme", "--email", OPERATOR_EMAIL, "--display-name", "E2E-Supreme", "--password-stdin"],
     `${OPERATOR_PASSWORD}\n`,
   )
-  const env = { ...process.env, CLARION_API_PROXY_TARGET: backend.baseUrl }
+  const env = { ...process.env, FRAUDDETECT_API_PROXY_TARGET: backend.baseUrl }
   await run("npx", ["vite", "build"], env)
   frontend = spawn("npx", ["vite", "preview", "--port", String(FRONTEND_PORT), "--strictPort"], { cwd: REPO_ROOT, env, shell: true })
   ready = await waitFor(ORIGIN, Date.now() + 60_000)
@@ -125,8 +125,8 @@ async function signUp(page: Page, email: string, organization: string): Promise<
 async function apiFromPage(page: Page, method: string, apiPath: string, body?: unknown): Promise<{ status: number; json: unknown }> {
   return page.evaluate(
     async ({ method, apiPath, body }) => {
-      const csrf = document.cookie.split(";").map((c: string) => c.trim()).find((c: string) => c.startsWith("clarion_csrf="))?.split("=")[1] ?? ""
-      const tenantId = localStorage.getItem("clarion.tenant_id")
+      const csrf = document.cookie.split(";").map((c: string) => c.trim()).find((c: string) => c.startsWith("frauddetect_csrf="))?.split("=")[1] ?? ""
+      const tenantId = localStorage.getItem("frauddetect.tenant_id")
       const response = await fetch(`/api/v1${apiPath}`, {
         method,
         credentials: "include",
@@ -145,13 +145,13 @@ test.describe("Wave 46 dashboard end-to-end", () => {
     skipIfUnavailable()
     await signUp(page, "e2e-cookie@example.com", "Cookie Co")
     const cookies = await context.cookies()
-    const session = cookies.find((c) => c.name === "clarion_session")
+    const session = cookies.find((c) => c.name === "frauddetect_session")
     expect(session?.httpOnly).toBe(true)
     expect(session?.secure).toBe(true)
     expect(session?.sameSite).toBe("Strict")
     const storage = await page.evaluate(() => JSON.stringify({ ...localStorage }) + JSON.stringify({ ...sessionStorage }))
     expect(storage).not.toContain(session!.value)
-    expect(await page.evaluate(() => document.cookie)).not.toContain("clarion_session")
+    expect(await page.evaluate(() => document.cookie)).not.toContain("frauddetect_session")
 
     // A write without the CSRF token is refused, even with a valid cookie.
     const forged = await page.evaluate(async () => (await fetch("/api/v1/tenants", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: '{"name":"x"}' })).status)
@@ -161,7 +161,7 @@ test.describe("Wave 46 dashboard end-to-end", () => {
     await page.getByRole("menuitem", { name: "Sign out" }).click()
     await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
     // The old cookie value no longer authenticates (server-side revocation, not just a cleared cookie).
-    const replay = await fetch(`${backend.baseUrl}/api/v1/auth/me`, { headers: { Cookie: `clarion_session=${session!.value}` } })
+    const replay = await fetch(`${backend.baseUrl}/api/v1/auth/me`, { headers: { Cookie: `frauddetect_session=${session!.value}` } })
     expect(replay.status).toBe(401)
   })
 
@@ -177,7 +177,7 @@ test.describe("Wave 46 dashboard end-to-end", () => {
     await tenant.getByRole("button", { name: "Provision live environment" }).click()
     await expect(tenant.getByText(/Live environment is provisioned/)).toBeVisible()
     await tenant.goto(`${ORIGIN}/app/live-access`)
-    await tenant.getByLabel(/Describe how you will use Clarion/).fill("End-to-end verification of LIVE access.")
+    await tenant.getByLabel(/Describe how you will use FraudDetect/).fill("End-to-end verification of LIVE access.")
     await tenant.getByRole("button", { name: "Submit request" }).click()
     await expect(tenant.getByText(/multi-factor authentication before LIVE actions/i)).toBeVisible()
 
@@ -191,7 +191,7 @@ test.describe("Wave 46 dashboard end-to-end", () => {
     await tenant.getByRole("button", { name: "I have saved them" }).click()
 
     await tenant.goto(`${ORIGIN}/app/live-access`)
-    await tenant.getByLabel(/Describe how you will use Clarion/).fill("End-to-end verification of LIVE access.")
+    await tenant.getByLabel(/Describe how you will use FraudDetect/).fill("End-to-end verification of LIVE access.")
     await tenant.getByRole("button", { name: "Submit request" }).click()
     await expect(tenant.getByText("Request under review")).toBeVisible()
 
@@ -258,7 +258,7 @@ test.describe("Wave 46 dashboard end-to-end", () => {
     // Audit: paginated, filterable, operator actions shown without the operator's identity.
     await tenant.goto(`${ORIGIN}/app/audit-logs?action=live_access_request.approved`)
     await expect(tenant.getByText("live_access_request.approved").first()).toBeVisible()
-    await expect(tenant.getByText("Clarion operator").first()).toBeVisible()
+    await expect(tenant.getByText("FraudDetect operator").first()).toBeVisible()
     await tenantContext.close()
     await operatorContext.close()
   })

@@ -123,7 +123,7 @@ describe("settings: team members management (Wave 39)", () => {
     const table = await screen.findByRole("table", { name: "Team members" })
     await within(table).findByText(fx.adminMembership.email!)
 
-    expect(screen.getByText("Read-only. Only owners can change roles or remove members.")).toBeInTheDocument()
+    expect(screen.getByText("Only the owner can change roles or remove people.")).toBeInTheDocument()
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /^Remove/ })).not.toBeInTheDocument()
   })

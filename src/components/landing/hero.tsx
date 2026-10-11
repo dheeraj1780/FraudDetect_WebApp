@@ -16,7 +16,7 @@ export function Hero() {
             Early access · sandbox environment
           </p>
           <h1 id="hero-heading" className="mt-5 text-4xl font-semibold tracking-tight text-fg sm:text-5xl">
-            Fraud Detect
+            FraudDetect
           </h1>
           <p className="mt-3 text-xl font-medium text-accent sm:text-2xl">Real-time fraud detection for modern payments.</p>
           <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-fg-muted">
@@ -31,11 +31,11 @@ export function Hero() {
               </Link>
             </Button>
             <Button size="lg" variant="secondary" asChild>
-              <a href="#product">Explore Fraud Detect</a>
+              <a href="#product">Explore FraudDetect</a>
             </Button>
           </div>
           <p className="mt-6 text-xs text-fg-subtle">
-            A BrandSecOps security product. Rule- and policy-based — not machine learning.
+            A BrandSecOps security product. Rule and policy based, not machine learning.
           </p>
         </Reveal>
 

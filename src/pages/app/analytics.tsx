@@ -130,7 +130,7 @@ export function Analytics() {
     <div className="mx-auto flex max-w-7xl flex-col gap-6">
       <PageHeader
         title="Analytics"
-        description="Trends across assessments: volume, risk, recommendation and policy outcomes."
+        description="How many payments you sent us, how risky they looked, and what your policy recommended."
         badges={sampleSummary ? <SampleBadge /> : undefined}
         action={<SampleToggle enabled={sample.enabled} onChange={sample.setEnabled} />}
       />
@@ -188,10 +188,10 @@ export function Analytics() {
 
             <div className="grid gap-4">
               <ChartCard title="Telemetry quality">
-                <ChartPlaceholder kind="unavailable">Telemetry quality isn&apos;t returned by the API, so it can&apos;t be charted.</ChartPlaceholder>
+                <ChartPlaceholder kind="unavailable">Not available yet.</ChartPlaceholder>
               </ChartCard>
               <ChartCard title="Assessment outcomes">
-                <ChartPlaceholder kind="unavailable">Outcome feedback (confirmed fraud / legitimate) isn&apos;t collected yet.</ChartPlaceholder>
+                <ChartPlaceholder kind="unavailable">Not available yet. Later you&apos;ll be able to mark payments as fraud or genuine.</ChartPlaceholder>
               </ChartCard>
             </div>
           </div>
@@ -203,7 +203,7 @@ export function Analytics() {
               label="Environment"
               options={[null, "sandbox", "live"] as const}
               value={environment}
-              labelFor={(v) => (v === null ? "All environments" : v === "sandbox" ? "Sandbox" : "Live")}
+              labelFor={(v) => (v === null ? "SANDBOX and LIVE" : v === "sandbox" ? "SANDBOX only" : "LIVE only")}
               onChange={selectEnvironment}
             />
             <ToggleGroup
@@ -243,26 +243,26 @@ function AnalyticsDashboard({ data }: { data: AnalyticsOut }) {
       <section aria-label="Summary" className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <MetricCard label="Assessments" state={{ kind: "value", value: data.summary.total_assessments }} hint={`${formatDate(data.range_start)} – ${formatDate(data.range_end)}`} />
         <MetricCard
-          label="Failure rate"
+          label="Failed checks"
           tone={data.summary.failure_rate && data.summary.failure_rate > 0 ? "warn" : "default"}
           state={data.summary.failure_rate === null ? { kind: "unavailable" } : { kind: "value", value: Math.round(data.summary.failure_rate * 100) }}
-          hint="% of assessments that failed to process (not a fraud decision)"
+          hint="% that couldn't be checked because of an error (not fraud)"
         />
         <MetricCard
-          label="Avg latency"
+          label="Average response time"
           state={data.latency.avg_ms === null ? { kind: "unavailable" } : { kind: "value", value: Math.round(data.latency.avg_ms) }}
-          hint={`ms, over ${data.latency.sample_size} completed assessment${data.latency.sample_size === 1 ? "" : "s"}`}
+          hint={`milliseconds, over ${data.latency.sample_size} finished check${data.latency.sample_size === 1 ? "" : "s"}`}
         />
         <MetricCard
           label="Completed"
           state={{ kind: "value", value: data.summary.completed_count }}
-          hint={`${data.summary.processing_count} processing · ${data.summary.failed_count} failed`}
+          hint={`${data.summary.processing_count} still running, ${data.summary.failed_count} failed`}
         />
       </section>
 
-      <ChartCard title="Assessment volume" description="Assessments per UTC day">
+      <ChartCard title="Checks per day" description="Days are in UTC">
         {data.time_series.points.length === 0 ? (
-          <ChartPlaceholder kind="empty">No assessments in this range.</ChartPlaceholder>
+          <ChartPlaceholder kind="empty">No checks in this period.</ChartPlaceholder>
         ) : (
           <AssessmentVolumeChart
             ariaLabel={`Assessments per day for the selected range, ${data.time_series.points.length} days with activity`}
@@ -272,9 +272,9 @@ function AnalyticsDashboard({ data }: { data: AnalyticsOut }) {
       </ChartCard>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <ChartCard title="Risk distribution">
+        <ChartCard title="Risk levels">
           {data.risk_band_distribution.length === 0 ? (
-            <ChartPlaceholder kind="empty">No assessments in this range.</ChartPlaceholder>
+            <ChartPlaceholder kind="empty">No checks in this period.</ChartPlaceholder>
           ) : (
             <BarList
               ariaLabel="Risk distribution"
@@ -285,15 +285,15 @@ function AnalyticsDashboard({ data }: { data: AnalyticsOut }) {
                   label: band === "UNAVAILABLE" ? "Not available" : SEVERITY_STYLES[band].label,
                   value: riskCounts[band],
                   barClass: band === "UNAVAILABLE" ? "bg-line-strong" : SEVERITY_STYLES[band].bar,
-                  hint: band === "UNAVAILABLE" ? "processing, failed, or not evaluable" : undefined,
+                  hint: band === "UNAVAILABLE" ? "still running, failed, or couldn't be checked" : undefined,
                 }))}
             />
           )}
         </ChartCard>
 
-        <ChartCard title="Policy recommendation distribution">
+        <ChartCard title="What your policy recommended">
           {data.recommendation_distribution.length === 0 ? (
-            <ChartPlaceholder kind="empty">No assessments in this range.</ChartPlaceholder>
+            <ChartPlaceholder kind="empty">No checks in this period.</ChartPlaceholder>
           ) : (
             <BarList
               ariaLabel="Policy recommendation distribution"
@@ -304,15 +304,15 @@ function AnalyticsDashboard({ data }: { data: AnalyticsOut }) {
                   label: rec === "UNAVAILABLE" ? "Not available" : RECOMMENDATION_STYLES[rec].label,
                   value: recCounts[rec],
                   barClass: rec === "UNAVAILABLE" ? "bg-line-strong" : REC_BARS[rec],
-                  hint: rec === "UNAVAILABLE" ? "no policy executed" : undefined,
+                  hint: rec === "UNAVAILABLE" ? "no policy was turned on, or the check failed" : undefined,
                 }))}
             />
           )}
         </ChartCard>
 
-        <ChartCard title="Assessment status">
+        <ChartCard title="Check status">
           {data.status_distribution.length === 0 ? (
-            <ChartPlaceholder kind="empty">No assessments in this range.</ChartPlaceholder>
+            <ChartPlaceholder kind="empty">No checks in this period.</ChartPlaceholder>
           ) : (
             <BarList
               ariaLabel="Assessment status distribution"
@@ -320,7 +320,7 @@ function AnalyticsDashboard({ data }: { data: AnalyticsOut }) {
                 .filter((status) => statusCounts[status] !== undefined)
                 .map((status) => ({
                   key: status,
-                  label: status === "completed" ? "Completed" : status === "processing" ? "Processing" : "Failed",
+                  label: status === "completed" ? "Finished" : status === "processing" ? "Still running" : "Failed",
                   value: statusCounts[status],
                   barClass: status === "completed" ? "bg-ok" : status === "processing" ? "bg-line-strong" : "bg-warn",
                 }))}
@@ -328,9 +328,9 @@ function AnalyticsDashboard({ data }: { data: AnalyticsOut }) {
           )}
         </ChartCard>
 
-        <ChartCard title="Environment split" description="Shown across every environment regardless of the filter above">
+        <ChartCard title="SANDBOX vs LIVE" description="Always shows both, whatever you picked above">
           {data.environment_distribution.length === 0 ? (
-            <ChartPlaceholder kind="empty">No assessments in this range.</ChartPlaceholder>
+            <ChartPlaceholder kind="empty">No checks in this period.</ChartPlaceholder>
           ) : (
             <BarList
               ariaLabel="Environment distribution"
@@ -342,9 +342,9 @@ function AnalyticsDashboard({ data }: { data: AnalyticsOut }) {
         </ChartCard>
       </div>
 
-      <ChartCard title="Policy version usage" description="How many assessments were evaluated under each policy version">
+      <ChartCard title="Policy versions used" description="How many checks used each version of your policy">
         {data.policy_version_distribution.length === 0 ? (
-          <ChartPlaceholder kind="empty">No assessments in this range.</ChartPlaceholder>
+          <ChartPlaceholder kind="empty">No checks in this period.</ChartPlaceholder>
         ) : (
           <DataTable
             caption="Policy version usage"
@@ -358,11 +358,11 @@ function AnalyticsDashboard({ data }: { data: AnalyticsOut }) {
                   row.policy_id ? (
                     <span className="font-mono text-xs text-fg">{row.policy_id.slice(0, 8)}…</span>
                   ) : (
-                    <span className="text-fg-subtle">No policy configured</span>
+                    <span className="text-fg-subtle">No policy turned on</span>
                   ),
               },
-              { key: "version", header: "Version", cell: (row) => (row.policy_version ? <span className="font-mono text-fg">v{row.policy_version}</span> : <span className="text-fg-subtle">—</span>) },
-              { key: "count", header: "Assessments", cell: (row) => row.count, className: "tabular-nums" },
+              { key: "version", header: "Version", cell: (row) => (row.policy_version ? <span className="font-mono text-fg">v{row.policy_version}</span> : <span className="text-fg-subtle">None</span>) },
+              { key: "count", header: "Checks", cell: (row) => row.count, className: "tabular-nums" },
             ]}
           />
         )}

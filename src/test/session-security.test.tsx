@@ -9,26 +9,26 @@ import { API, server } from "@/test/server"
 /** Wave 46: cookie sessions (no token in browser storage), CSRF echo, and the tenant MFA gate. */
 describe("session security", () => {
   it("sends credentials with every request and echoes the CSRF cookie on writes only", async () => {
-    document.cookie = "clarion_csrf=csrf-test-value; path=/"
+    document.cookie = "frauddetect_csrf=csrf-test-value; path=/"
     const seen: Array<{ method: string; csrf: string | null; client: string | null }> = []
     server.use(
       http.post(`${API}/tenants/current/environments/live`, ({ request }) => {
-        seen.push({ method: "POST", csrf: request.headers.get("x-csrf-token"), client: request.headers.get("x-clarion-client") })
+        seen.push({ method: "POST", csrf: request.headers.get("x-csrf-token"), client: request.headers.get("x-frauddetect-client") })
         return HttpResponse.json(fx.sandboxAndLiveEnvironments[1], { status: 201 })
       }),
       http.get(`${API}/tenants/current/environments`, ({ request }) => {
-        seen.push({ method: "GET", csrf: request.headers.get("x-csrf-token"), client: request.headers.get("x-clarion-client") })
+        seen.push({ method: "GET", csrf: request.headers.get("x-csrf-token"), client: request.headers.get("x-frauddetect-client") })
         return HttpResponse.json(fx.sandboxOnlyEnvironments)
       }),
     )
     const user = userEvent.setup()
     renderApp("/app/credentials", { signedIn: true })
-    await user.click(await screen.findByRole("button", { name: "Provision live environment" }))
+    await user.click(await screen.findByRole("button", { name: "Set up LIVE" }))
     await waitFor(() => expect(seen.some((s) => s.method === "POST")).toBe(true))
     expect(seen.find((s) => s.method === "POST")?.csrf).toBe("csrf-test-value")
     expect(seen.find((s) => s.method === "GET")?.csrf).toBeNull()
     expect(seen.every((s) => s.client === "web")).toBe(true)
-    document.cookie = "clarion_csrf=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/"
+    document.cookie = "frauddetect_csrf=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/"
   })
 
   it("routes a session that still needs its MFA challenge to the MFA page, then into the app", async () => {
@@ -57,12 +57,12 @@ describe("session security", () => {
     server.use(http.get(`${API}/auth/me`, () => HttpResponse.json({ ...fx.me, tenant_mfa_policy: "required" })))
     renderApp("/app/overview", { signedIn: true })
     expect(await screen.findByRole("heading", { name: "Set up two-factor authentication" })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Set up an authenticator app" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Set up two-factor sign-in" })).toBeInTheDocument()
   })
 
   it("offers MFA setup on the settings page", async () => {
     renderApp("/app/settings", { signedIn: true })
-    expect(await screen.findByText("Two-factor authentication")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Set up an authenticator app" })).toBeInTheDocument()
+    expect(await screen.findByText("Two-factor sign-in")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Set up two-factor sign-in" })).toBeInTheDocument()
   })
 })
